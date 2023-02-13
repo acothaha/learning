@@ -2,19 +2,26 @@
 
 conda activate {env_name}
 
+# running a python script
+
+python {path}
+
 # starting prefect server
 
 prefect orion start
 
 # creating a prefect deployment
 
-prefect build {path}:{flow} -n "name" --cron "* * * * *" -a
+prefect deployment build {path}:{flow} -n "name" --cron "* * * * *" -a
 
 
-
-# running a prefect deployment
+# pushing a prefect deployment into server
 
 prefect deployment apply {.yaml file}
+
+# Running a prefect deployment
+
+prefect deployment run {deployment_name}
 
 # Specifying API endpoint for a specific url
 
