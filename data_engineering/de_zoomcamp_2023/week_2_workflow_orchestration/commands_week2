@@ -1,0 +1,16 @@
+# Activate conda env
+
+conda activate {env_name}
+
+# starting prefect server
+
+prefect orion start
+
+# creating a prefect deployment
+
+prefect build {path}:{flow} -n "name"
+
+# running a prefect deployment
+
+prefect deployment apply {.yaml file}
+
