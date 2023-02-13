@@ -8,9 +8,32 @@ prefect orion start
 
 # creating a prefect deployment
 
-prefect build {path}:{flow} -n "name"
+prefect build {path}:{flow} -n "name" --cron "* * * * *" -a
+
+
 
 # running a prefect deployment
 
 prefect deployment apply {.yaml file}
+
+# Specifying API endpoint for a specific url
+
+prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+
+# starting an agent for running prefect work queue
+
+prefect agent start -q {profile_name}
+
+
+# login in docker hub
+
+docker login -u {username}
+
+# pushing docker image
+
+docker push {docker_name:tag}
+
+# prefect cloud platform
+
+https://app.prefect.cloud/
 
