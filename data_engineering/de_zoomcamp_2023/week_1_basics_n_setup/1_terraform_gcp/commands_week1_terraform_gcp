@@ -1,0 +1,16 @@
+
+# Google Cloud SDK Authentication
+
+export GOOGLE_APPLICATION_CREDENTIALS={'path to the credentials json'}
+
+# Authenticate Google Cloud
+
+gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
+
+
+# Terraform command
+
+terraform init
+terraform plan
+terraform apply
+terraform destroy

@@ -1,0 +1,5 @@
+data_pgadmin
+*.csv
+*.gz
+*.parquet
+ny_taxi_postgres_data

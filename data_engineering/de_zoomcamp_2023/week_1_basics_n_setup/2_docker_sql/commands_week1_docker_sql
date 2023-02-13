@@ -1,0 +1,89 @@
+
+# Creating docker container
+
+docker build -t {'container name'}
+
+# running docker container interactively
+
+docker run -it {'container name'}
+
+#connecting pgcli with our postgre db
+pgcli -h localhost -p 5432 -u root -d ny_taxi
+
+# running image of postgres
+docker run -it \
+    -e POSTGRES_USER="root" \
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+    postgres:13
+
+# running image of pgadmin
+docker run -it \
+    -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+    -e PGADMIN_DEFAULT_PASSWORD="root" \
+    -p 8080:80 \
+    dpage/pgadmin4
+
+# network between postgre and pgadmin
+
+docker network create pg-network
+
+docker run -it \
+    -e PGUSER="root" \
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -e listen_addresses="::1, 127.0.0.1" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+    --network=pg-network \
+    --name pg-database \
+    postgres:13
+
+docker run -it \
+    -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+    -e PGADMIN_DEFAULT_PASSWORD="root" \
+    -p 8080:80 \
+    --network=pg-network \
+    --name pgadmin \
+    dpage/pgadmin4
+
+# command to run ingest_data
+URL="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-11.parquet"
+
+python ingest_data.py \
+    --user=root \
+    --password=root \
+    --host=localhost \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name=yellow_taxi_trips \
+    --url=${URL}
+
+# building docker container
+docker build -t taxi_ingest:v001 .
+
+
+
+docker run -it \
+    --network=2_docker_sql_default \
+    taxi_ingest:green001 \
+        --user=root \
+        --password=root \
+        --host=pgdatabase \
+        --port=5432 \
+        --db=ny_taxi \
+        --table_name=green_taxi_trips \
+        --url=https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-01.csv.gz
+
+## Docker compose
+
+# docker-compose up -> running docker-compose.yaml
+# -d for running in detach mode
+
+docker-compose up -d
+
+# docker-compose down -> terminating a running docker compose
+
+docker-compose down
