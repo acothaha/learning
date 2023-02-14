@@ -40,6 +40,10 @@ docker login -u {username}
 
 docker push {docker_name:tag}
 
+# deploy docker deploy python file
+
+python {path:docker python deplot file}
+
 # prefect cloud platform
 
 https://app.prefect.cloud/

@@ -1,17 +1,14 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'etl-parent-flow'
 ###
-name: etl2
+name: test_cloud
 description: null
-version: e97ce662a24d7c39c4a72a940bc2df10
+version: 8c1235bd7b1607f9fe134a5349d5bec7
 # The work queue that will handle this deployment's runs
 work_queue_name: default
 tags: []
 parameters: {}
-schedule:
-  cron: 0 0 * * *
-  timezone: null
-  day_or: true
+schedule: null
 infra_overrides: {}
 infrastructure:
   type: process

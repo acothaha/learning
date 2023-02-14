@@ -1,4 +1,8 @@
 
+# Creating docker image
+
+docker image build -t {username/folder:tag}
+
 # Creating docker container
 
 docker build -t {'container name'}
