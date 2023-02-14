@@ -26,7 +26,7 @@
 - [Query Performance](##Query-Performance)
 
 
-## 3.1 Data Warehouse
+## 3.1 Data Warehouse 
 
 ### **OLAP vs OLTP**
 
