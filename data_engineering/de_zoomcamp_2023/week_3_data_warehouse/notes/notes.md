@@ -9,8 +9,8 @@
 * [OLAP vs OLTP](#olap-vs-oltp)
 * [Data Warehouse](#data-warehouse)
 * [BigQuery](#bigquery)
-* [BigQuery Cost](#--bigquery-cost--)
-* [BigQuery Query](#--bigquery-query--)
+* [BigQuery Cost](#bigquery-cost)
+* [BigQuery Query](#bigquery-query)
 
 [**3.2 Partitioning And Clustering**](#32-partitioning-and-clustering)
 * [Partition in BigQuery](#partition-in-bigquery)
