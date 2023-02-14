@@ -4,29 +4,29 @@
 ## Table of Contents
 
 
-**3.1.** [**Data Warehouse**](#3.1-Data-Warehouse) 
 
-- [OLAP vs OLTP](##OLAP-vs-OLTP)
-- [Data Warehouse](##Data-Warehouse)
-- [BigQuery](##BigQuery)
-- [BigQuery Cost](##BigQuery-Cost)
-- [BigQuery Query](##BigQuery-Query)
+[**3.1 Data Warehouse And BigQuery**](#31-data-warehouse-and-bigquery)
+  * [OLAP vs OLTP](##--olap-vs-olttp--)
+  * [Data Warehouse](##data-warehouse)
+  * [BigQuery](##--bigquery--)
+  * [BigQuery Cost](##--bigquery-cost--)
+  * [BigQuery Query](##--bigquery-query--)
 
-**3.2.** [**Partitioning And Clustering**](#3.2-Partitioning-And-Clustering) 
+[**3.2 Partitioning And Clustering**](#32-partitioning-and-clustering)
++ [Partition in BigQuery](#--partition-in-bigquery--)
++ [BigQuery Partition Query](#--bigquery-partition-query--)
++ [Clustering in BigQuery](#--clustering-in-bigquery--)
++ [BigQuery Partition + Clustering Query](#--bigquery-partition---clustering-query--)
++ [Partitioning vs Clustering](#--partitioning-vs-clustering--)
 
-- [Partition in BigQuery](##Partition-in-BigQuery)
-- [BigQuery Partition Query](##BigQuery-Partition-Query)
-- [Clustering in BigQuery](##Clustering-in-BigQuery)
-- [BigQuery Partition + Clustering Query](##BigQuery-Partition-+-Clustering-Query)
-- [Partitioning vs Clustering](##Partitioning-vs-Clustering)
-
-**3.2.** [**Bigquery Best Practices**](#3.3-Bigquery-Best-Practices) 
-
-- [Cost Reduction](##Cost-Reduction)
-- [Query Performance](##Query-Performance)
+[**3.3 BigQuery Best Practices**](#33-bigquery-best-practices)
++ [Cost Reduction](#--cost-reduction--)
++ [Query Performance](#--query-performance--)
 
 
-## 3.1 Data Warehouse 
+
+
+## 3.1 Data Warehouse And BigQuery
 
 ### **OLAP vs OLTP**
 
