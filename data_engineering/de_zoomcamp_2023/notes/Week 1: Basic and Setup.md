@@ -193,7 +193,7 @@ pgcli -h localhost -p 5432 -u root -d ny_taxi
 - `-d` is the database name.
 - The password is not provided; it will be requested after running the command.
 
-### **Ingesting data to Postgres with Python**
+### **Ingesting data to Postgres with Python**d
 
 We will now use Jupyter Notebook to read a SCV file and export it into Postgres.
 
@@ -201,4 +201,4 @@ We will use data from the [NYC TLC Trip Record Data website](https://www.nyc.gov
 
 > Note: knowledge of Jupyter Notebook, Python environment management and Pandas is assumed in these notes. Please check [this link](https://gist.github.com/ziritrion/9b80e47956adc0f20ecce209d494cd0a#pandas) for a Pandas cheatsheet and [this link](https://gist.github.com/ziritrion/8024025672ea92b8bdeb320d6015aa0d) for a Conda cheatsheet for Python environment management.
 
-Check the completed `upload-data.ipynb` [here]() for a detailed guide. Feel free to copy the file to your work directory; in the same directory you will need to have the CSV file linked above and the ny_taxi_postgres_data subdirectory.
+Check the completed `upload-data.ipynb` [here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_1_basics_n_setup/2_docker_sql/upload_data.ipynb) for a detailed guide. Feel free to copy the file to your work directory; in the same directory you will need to have the CSV file linked above and the ny_taxi_postgres_data subdirectory.
