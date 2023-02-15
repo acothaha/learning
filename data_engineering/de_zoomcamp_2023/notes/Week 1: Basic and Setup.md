@@ -69,3 +69,62 @@ Docker provides the following advantages:
 - Running pipelines on the cloud (AWS Batch, Kubernetes jobs)
 - Spark (for defining data pipelines)
 - Serverless (AWS Lambda, Google functions)
+
+Docker containers are ***stateless***: any changes done inside a container will **NOT** be saved when the container is killed and started again. This is an advantage because it allows us to restore any container to its initial state in a reproducible manner, but you will have to store data elsewhere if you need to do so; a common way to do so is with *volumes*.
+
+### **Creating a simple "data pipeline" in Docker**
+
+We will create a simple "data pipeline" using python `pipeline.py` that receinves an argument and print in.
+
+```python
+
+import sys
+import pandas as pd # we don't need this but it's useful for the example
+
+# print arguments
+print(sys.argv)
+
+# argument 0 is the name os the file
+# argumment 1 contains the actual first argument we care about
+day = sys.argv[1]
+
+# print a sentence with the argument
+print(f'job finished successfully for day = {day}')
+```
+
+We can run this script in CLI 
+
+> `python pipeline.py <day>`
+
+
+It will print 2 lines:
+
+> `['pipeline.py', '<day>']`
+
+> j`ob finished successfully for day = <day>`
+
+Let's containerize it by creating a Docker image. Create the following `Dockerfile`file:
+
+```Dockerfile
+# base Docker image that we will build on
+FROM python:3.9.1
+
+# set up our image by installing prerequisites; pandas in this case
+RUN pip install pandas
+
+# set up the working directory inside the container
+WORKDIR /app
+# copy the script to the container. 1st name is source file, 2nd is destination
+COPY pipeline.py pipeline.py
+
+# define what to do first when the container runs
+# in this example, we will just run the script
+ENTRYPOINT ["python", "pipeline.py"]
+```
+
+Let's build the image:
+
+> docker build -t test:pandas .
+
+
+

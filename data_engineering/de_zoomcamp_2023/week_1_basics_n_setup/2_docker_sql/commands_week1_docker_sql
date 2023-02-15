@@ -1,15 +1,15 @@
 
 # Creating docker image
 
-docker image build -t {username/folder:tag}
+docker image build -t {username/folder:tag} .
 
 # Creating docker container
 
-docker build -t {'container name'}
+docker build -t {'container name'} .
 
 # running docker container interactively
 
-docker run -it {'container name'}
+docker run -it {'container name'} .
 
 #connecting pgcli with our postgre db
 pgcli -h localhost -p 5432 -u root -d ny_taxi
