@@ -3,26 +3,19 @@
 
 ## Table of Contents
 
-
-
-[**3.1 Data Warehouse And BigQuery**](#31-data-warehouse-and-bigquery)
-* [OLAP vs OLTP](#olap-vs-oltp)
-* [Data Warehouse](#data-warehouse)
-* [BigQuery](#bigquery)
-* [BigQuery Cost](#bigquery-cost)
-* [BigQuery Query](#bigquery-query)
-
-[**3.2 Partitioning And Clustering**](#32-partitioning-and-clustering)
-* [Partition in BigQuery](#partition-in-bigquery)
-* [BigQuery Partition Query](#bigquery-partition-query)
-* [Clustering in BigQuery](#clustering-in-bigquery)
-* [BigQuery Partition + Clustering Query](#bigquery-partition-+-clustering-query)
-* [Partitioning vs Clustering](#partitioning-vs-clustering)
-
-[**3.3 BigQuery Best Practices**](#33-bigquery-best-practices)
-* [Cost Reduction](#cost-reduction)
-* [Query Performance](#query-performance)
-
+- [**1.1 Introduction to Data Engineering**](#11-introduction-to-data-engineering)
+    - [Architecture](#architecture)
+    - [Data Pipelines](#data-pipelines)
+- [**1.2 Docker and Postgres**](#12-docker-and-postgres)
+    - [Docker Basic Concepts](#docker-basic-concepts)
+    - [Creating A Simple "Data Pipeline" In Docker](#creating-a-simple-data-pipeline-in-docker)
+    - [Running Postgres In A Container](#running-postgres-in-a-container)
+    - [Ingesting Data To Postgres With Python](#ingesting-data-to-postgres-with-python)
+    - [Connecting pgAdmin and Postgres](#connecting-pgadmin-and-postgres)
+    - [Putting The Ingestion Script Into Docker](#putting-the-ingestion-script-into-docker)
+    - [Dockerizing The Script](#dockerizing-the-script)
+    - [Running Postgres And PgAdmin With Docker-compose](#running-postgres-and-pgadmin-with-docker-compose)
+    - [SQL Refresher](#sql-refresher)
 
 
 
@@ -72,7 +65,7 @@ Docker provides the following advantages:
 
 Docker containers are ***stateless***: any changes done inside a container will **NOT** be saved when the container is killed and started again. This is an advantage because it allows us to restore any container to its initial state in a reproducible manner, but you will have to store data elsewhere if you need to do so; a common way to do so is with *volumes*.
 
-### **Creating a simple "data pipeline" in Docker**
+### **Creating A Simple "Data Pipeline" In Docker**
 
 We will create a simple "data pipeline" using python `pipeline.py` that receinves an argument and print in.
 
@@ -148,7 +141,7 @@ you will get the same output you did when you ran the pipeline script itself.
 >Note: these instructions assume that `pipeline.py` and `Dockerfile` are in the same directory. The Docker commands should also be run from the same directory as these files.
 
 
-### **Running Postgres in a container**
+### **Running Postgres In A Container**
 
 You can run a containerized version of Postgres that doesn't require any installation steps. You only need to provide a few *environment* variables to it as well as a *volume* for storing data.
 
@@ -193,7 +186,7 @@ pgcli -h localhost -p 5432 -u root -d ny_taxi
 - `-d` is the database name.
 - The password is not provided; it will be requested after running the command.
 
-### **Ingesting data to Postgres with Python**
+### **Ingesting Data To Postgres With Python**
 
 We will now use Jupyter Notebook to read a SCV file and export it into Postgres.
 
@@ -259,7 +252,7 @@ Under *General* give the Server a name and under *Connection* add the same host 
 
 Click on *Save*. You should now be connected to the database.
 
-### **Putting the ingestion script into Docker**
+### **Putting The Ingestion Script Into Docker**
 
 There is a convenient way to export `ipynb` file into `py`. Use this command:
 
@@ -319,7 +312,7 @@ FROM
 
 - This query should return 1,369,765 rows.
 
-### **Dockerizing the script**
+### **Dockerizing The Script**
 
 Let's modify the Dockerfile we created before to include our `ingest_data.py` script and create a new image:
 
@@ -363,7 +356,7 @@ docker run -it \
 - Providing network for Docker to find the Postgres container is necessary. It is placed before the name of the image
 - Since Postgres is running on a seperate container, the host argument will have to point to the container name of Postgres
 
-### **Running Postgres and pgAdmin with Docker-compose**
+### **Running Postgres And PgAdmin With Docker-compose**
 
 `docker-compose` allows to launch multiple containers using a single configuration file, so that we don't have to run multiple complex `docker run` commands separately.
 
