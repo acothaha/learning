@@ -1,7 +1,35 @@
-# WEEK 1: BASIC AND SETUP
----
+<style>
+.nine h1 {
+  text-align:center; t
+  ext-transform:uppercase;  
+  letter-spacing:1px;
+  font-family: "Raleway", sans-serif;
+  font-size: 50px;
+  font-weight: 600;
+  background-image: conic-gradient(#F7A183 0.1%, #FCFCFC 40%, #FCFCFC , #00c2cb 70%, #F7A183 80%);
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+}
 
-## Table of Contents
+.nine h1 span:after,.nine h1 span:before {
+    content: " ";
+    display: block;
+    /* border-bottom: 1px solid #ccc; */
+    /* border-top: 1px solid #ccc; */
+    height: 1px;
+  background-color :#FFECFB
+}
+
+</style>
+
+<div class="nine">
+  <h1>BASIC AND SETUP<span></span></h1>
+</div>
+
+
+
+### Table of Contents
 
 [**1.1 Introduction to Data Engineering**](#11-introduction-to-data-engineering)
 - [Architecture](#architecture)
@@ -20,11 +48,11 @@
 
 
 
-## 1.1 Introduction to Data Engineering
+# 1.1 Introduction to Data Engineering
 
 ***Data engineering*** is the design and development of systems of collecting, storing and analyzing data at scale.
 
-### **Architecture**
+## **Architecture**
 
 Along the course, we will replicate the following architecture:
 
@@ -42,15 +70,15 @@ Along the course, we will replicate the following architecture:
 - [*Spark*](https://spark.apache.org/): Analytics engine for large-scale data processing (Distributed Processing). 
 - [*Kafka*](https://kafka.apache.org/): Unified, high-throughput,low-latency platform for handling real-time data feeds (Streaming).
 
-### **Data Pipelines**
+## **Data Pipelines**
 
 A data pipeline is a service that receives data as input and outputs more data. For example, reading a CSV file, transforming the data somehow and storing it as a table in a PostgreSQL database.
 
 <img src="images/w1_data_pipelines.png"  width="600" height="300">
 
-## 1.2 Docker and Postgres
+# 1.2 Docker and Postgres
 
-### **Docker Basic Concepts**
+## **Docker Basic Concepts**
 
 **Docker** is a *containerization* software that allows us to isolate software in a similar way to virtual machines but in a much leaner way.
 
@@ -66,7 +94,7 @@ Docker provides the following advantages:
 
 Docker containers are ***stateless***: any changes done inside a container will **NOT** be saved when the container is killed and started again. This is an advantage because it allows us to restore any container to its initial state in a reproducible manner, but you will have to store data elsewhere if you need to do so; a common way to do so is with *volumes*.
 
-### **Creating A Simple "Data Pipeline" In Docker**
+## **Creating A Simple "Data Pipeline" In Docker**
 
 We will create a simple "data pipeline" using python `pipeline.py` that receinves an argument and print in.
 
@@ -142,7 +170,7 @@ you will get the same output you did when you ran the pipeline script itself.
 >Note: these instructions assume that `pipeline.py` and `Dockerfile` are in the same directory. The Docker commands should also be run from the same directory as these files.
 
 
-### **Running Postgres In A Container**
+## **Running Postgres In A Container**
 
 You can run a containerized version of Postgres that doesn't require any installation steps. You only need to provide a few *environment* variables to it as well as a *volume* for storing data.
 
@@ -187,7 +215,7 @@ pgcli -h localhost -p 5432 -u root -d ny_taxi
 - `-d` is the database name.
 - The password is not provided; it will be requested after running the command.
 
-### **Ingesting Data To Postgres With Python**
+## **Ingesting Data To Postgres With Python**
 
 We will now use Jupyter Notebook to read a SCV file and export it into Postgres.
 
@@ -197,7 +225,7 @@ We will use data from the [NYC TLC Trip Record Data website](https://www.nyc.gov
 
 Check the completed `upload-data.ipynb` [here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_1_basics_n_setup/2_docker_sql/upload_data.ipynb) for a detailed guide. Feel free to copy the file to your work directory; in the same directory you will need to have the CSV file linked above and the `ny_taxi_postgres_data` subdirectory. 
 
-### **Connecting pgAdmin and Postgres**
+## **Connecting pgAdmin and Postgres**
 
 `pgcli` is useable but it's not really practical to utilize. [`pgAdmin`](https://www.pgadmin.org/download/) on the other hand, make it easier to access and manage our Postgres databases. it's possible to run pgAdmin as a container along with the postgres container, but both containers will have to be in the same *virtual network* so that they can connect to each other.
 
@@ -253,7 +281,7 @@ Under *General* give the Server a name and under *Connection* add the same host 
 
 Click on *Save*. You should now be connected to the database.
 
-### **Putting The Ingestion Script Into Docker**
+## **Putting The Ingestion Script Into Docker**
 
 There is a convenient way to export `ipynb` file into `py`. Use this command:
 
@@ -313,7 +341,7 @@ FROM
 
 - This query should return 1,369,765 rows.
 
-### **Dockerizing The Script**
+## **Dockerizing The Script**
 
 Let's modify the Dockerfile we created before to include our `ingest_data.py` script and create a new image:
 
@@ -357,7 +385,7 @@ docker run -it \
 - Providing network for Docker to find the Postgres container is necessary. It is placed before the name of the image
 - Since Postgres is running on a seperate container, the host argument will have to point to the container name of Postgres
 
-### **Running Postgres And PgAdmin With Docker-compose**
+## **Running Postgres And PgAdmin With Docker-compose**
 
 `docker-compose` allows to launch multiple containers using a single configuration file, so that we don't have to run multiple complex `docker run` commands separately.
 
@@ -409,7 +437,7 @@ After you finish the ingestation, you can terminate the docker-compose with this
 ```
 docker-compose down
 ```
-### **SQL Refresher**
+## **SQL Refresher**
 
 Below are a series of SQL query examples to remember how SQL works. For this example we'll asume that we're working with 2 tables named `trips` (list of all yellow taxi trips of NYC for January 2021) and `zones` (list of zone IDs for pickups and dropoffs).
 
