@@ -3,19 +3,20 @@
 
 ## Table of Contents
 
-- [**1.1 Introduction to Data Engineering**](#11-introduction-to-data-engineering)
-    - [Architecture](#architecture)
-    - [Data Pipelines](#data-pipelines)
-- [**1.2 Docker and Postgres**](#12-docker-and-postgres)
-    - [Docker Basic Concepts](#docker-basic-concepts)
-    - [Creating A Simple "Data Pipeline" In Docker](#creating-a-simple-data-pipeline-in-docker)
-    - [Running Postgres In A Container](#running-postgres-in-a-container)
-    - [Ingesting Data To Postgres With Python](#ingesting-data-to-postgres-with-python)
-    - [Connecting pgAdmin and Postgres](#connecting-pgadmin-and-postgres)
-    - [Putting The Ingestion Script Into Docker](#putting-the-ingestion-script-into-docker)
-    - [Dockerizing The Script](#dockerizing-the-script)
-    - [Running Postgres And PgAdmin With Docker-compose](#running-postgres-and-pgadmin-with-docker-compose)
-    - [SQL Refresher](#sql-refresher)
+[**1.1 Introduction to Data Engineering**](#11-introduction-to-data-engineering)
+- [Architecture](#architecture)
+- [Data Pipelines](#data-pipelines)
+
+[**1.2 Docker and Postgres**](#12-docker-and-postgres)
+- [Docker Basic Concepts](#docker-basic-concepts)
+- [Creating A Simple "Data Pipeline" In Docker](#creating-a-simple-data-pipeline-in-docker)
+- [Running Postgres In A Container](#running-postgres-in-a-container)
+- [Ingesting Data To Postgres With Python](#ingesting-data-to-postgres-with-python)
+- [Connecting pgAdmin and Postgres](#connecting-pgadmin-and-postgres)
+- [Putting The Ingestion Script Into Docker](#putting-the-ingestion-script-into-docker)
+- [Dockerizing The Script](#dockerizing-the-script)
+- [Running Postgres And PgAdmin With Docker-compose](#running-postgres-and-pgadmin-with-docker-compose)
+- [SQL Refresher](#sql-refresher)
 
 
 
