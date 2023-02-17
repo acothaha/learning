@@ -14,16 +14,25 @@
 - [Connecting pgAdmin and Postgres](#connecting-pgadmin-and-postgres)
 - [Putting The Ingestion Script Into Docker](#putting-the-ingestion-script-into-docker)
 - [Dockerizing The Script](#dockerizing-the-script)
-- [Running Postgres And PgAdmin With Docker-compose](#running-postgres-and-pgadmin-with-docker-compose)
+- [Running Postgres and PgAdmin with Docker-compose](#running-postgres-and-pgadmin-with-docker-compose)
 - [SQL Refresher](#sql-refresher)
 
+[**1.3 Google Cloud Platform and Terraform**](#13-google-cloud-platform-and-terraform)
+- [GCP Initial Setup](#gcp-initial-setup)
+- [GCP Setup for Access](#gcp-setup-for-access)
+- [Terraform Basics](#terraform-basics)
+- [Creating GCP Infrastructure with Terraform](#creating-gcp-infrastructure-with-terraform)
+
+[**1.4 Extras**](#14-extras)
+- [Setting Up The Environment on Cloud VM](#setting-up-the-environment-on-cloud-vm)
+- [Port mapping and networks in Docker](#port-mapping-and-networks-in-docker)
 
 
-# 1.1 Introduction to Data Engineering
+# **1.1 Introduction to Data Engineering**
 
 ***Data engineering*** is the design and development of systems of collecting, storing and analyzing data at scale.
 
-## **Architecture**
+## Architecture
 
 Along the course, we will replicate the following architecture:
 
@@ -33,23 +42,23 @@ Along the course, we will replicate the following architecture:
 - *Google Cloud Platform (GCP)*: Cloud-based auto-scaling platform by Google
     - [*Google Cloud Storage (GCS)*](https://cloud.google.com/storage): A managed service for storing unstructured data (Data Lake)
     - [*BigQuery*](https://cloud.google.com/bigquery): Serverless and cost-effective enterprise data warehouse
-- [*Terraform*](https://www.terraform.io/): An infrastructure-as-Code (IaC) tool that lets you build, change, and version cloud and on-prem resources safely and efficiently
+- [*Terraform*](https://www.terraform.io/): An Infrastructure-as-Code (IaC) tool that lets you build, change, and version cloud and on-prem resources safely and efficiently
 - [*Docker*](https://www.docker.com/): A platform designed to help developers build, share, and run modern applications (Containerization)
 - *SQL*: Data Analysis & Exploration
 - [*Prefect*](https://www.prefect.io/): Workflow orchestration tool for coordinating all data tools
 - [*dbt*](https://docs.getdbt.com/docs/introduction): Command line tool that enables data analysts and engineers to transform data in their warehouses more effectively (Data transformation)
 - [*Spark*](https://spark.apache.org/): Analytics engine for large-scale data processing (Distributed Processing). 
-- [*Kafka*](https://kafka.apache.org/): Unified, high-throughput,low-latency platform for handling real-time data feeds (Streaming).
+- [*Kafka*](https://kafka.apache.org/): Unified, high-throughput, low-latency platform for handling real-time data feeds (Streaming).
 
-## **Data Pipelines**
+## Data Pipelines
 
 A data pipeline is a service that receives data as input and outputs more data. For example, reading a CSV file, transforming the data somehow and storing it as a table in a PostgreSQL database.
 
 <img src="images/w1_data_pipelines.png"  width="600" height="300">
 
-# 1.2 Docker and Postgres
+# **1.2 Docker and Postgres**
 
-## **Docker Basic Concepts**
+## Docker Basic Concepts
 
 **Docker** is a *containerization* software that allows us to isolate software in a similar way to virtual machines but in a much leaner way.
 
@@ -65,9 +74,9 @@ Docker provides the following advantages:
 
 Docker containers are ***stateless***: any changes done inside a container will **NOT** be saved when the container is killed and started again. This is an advantage because it allows us to restore any container to its initial state in a reproducible manner, but you will have to store data elsewhere if you need to do so; a common way to do so is with *volumes*.
 
-## **Creating A Simple "Data Pipeline" In Docker**
+## Creating A Simple "Data Pipeline" In Docker
 
-We will create a simple "data pipeline" using python `pipeline.py` that receinves an argument and print in.
+We will create a simple "data pipeline" using python `pipeline.py` that receives an argument and print in.
 
 ```python
 
@@ -97,7 +106,7 @@ It will print 2 lines:
 
 job finished successfully for day = <day>
 ```
-Let's containerize it by creating a Docker image. Create the following `Dockerfile`file:
+Let's containerize it by creating a Docker image. Create the following `Dockerfile` file:
 
 ```Dockerfile
 # base Docker image that we will build on
@@ -133,7 +142,7 @@ docker images -ls
 Since the image is there, now we can run the container and pass an argument to it, so that our pipeline will receive it:
 
 ```bash
-docker run -it test:pandas some_number
+docker run -it test:pandas <day>
 ```
 
 you will get the same output you did when you ran the pipeline script itself.
@@ -141,7 +150,7 @@ you will get the same output you did when you ran the pipeline script itself.
 >Note: these instructions assume that `pipeline.py` and `Dockerfile` are in the same directory. The Docker commands should also be run from the same directory as these files.
 
 
-## **Running Postgres In A Container**
+## Running Postgres In A Container
 
 You can run a containerized version of Postgres that doesn't require any installation steps. You only need to provide a few *environment* variables to it as well as a *volume* for storing data.
 
@@ -186,7 +195,7 @@ pgcli -h localhost -p 5432 -u root -d ny_taxi
 - `-d` is the database name.
 - The password is not provided; it will be requested after running the command.
 
-## **Ingesting Data To Postgres With Python**
+## Ingesting Data To Postgres With Python
 
 We will now use Jupyter Notebook to read a SCV file and export it into Postgres.
 
@@ -196,7 +205,7 @@ We will use data from the [NYC TLC Trip Record Data website](https://www.nyc.gov
 
 Check the completed `upload-data.ipynb` [here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_1_basics_n_setup/2_docker_sql/upload_data.ipynb) for a detailed guide. Feel free to copy the file to your work directory; in the same directory you will need to have the CSV file linked above and the `ny_taxi_postgres_data` subdirectory. 
 
-## **Connecting pgAdmin and Postgres**
+## Connecting pgAdmin and Postgres
 
 `pgcli` is useable but it's not really practical to utilize. [`pgAdmin`](https://www.pgadmin.org/download/) on the other hand, make it easier to access and manage our Postgres databases. it's possible to run pgAdmin as a container along with the postgres container, but both containers will have to be in the same *virtual network* so that they can connect to each other.
 
@@ -252,7 +261,7 @@ Under *General* give the Server a name and under *Connection* add the same host 
 
 Click on *Save*. You should now be connected to the database.
 
-## **Putting The Ingestion Script Into Docker**
+## Putting The Ingestion Script Into Docker
 
 There is a convenient way to export `ipynb` file into `py`. Use this command:
 
@@ -312,7 +321,7 @@ FROM
 
 - This query should return 1,369,765 rows.
 
-## **Dockerizing The Script**
+## Dockerizing The Script
 
 Let's modify the Dockerfile we created before to include our `ingest_data.py` script and create a new image:
 
@@ -356,7 +365,7 @@ docker run -it \
 - Providing network for Docker to find the Postgres container is necessary. It is placed before the name of the image
 - Since Postgres is running on a seperate container, the host argument will have to point to the container name of Postgres
 
-## **Running Postgres And PgAdmin With Docker-compose**
+## Running Postgres and PgAdmin with Docker-compose
 
 `docker-compose` allows to launch multiple containers using a single configuration file, so that we don't have to run multiple complex `docker run` commands separately.
 
@@ -408,7 +417,7 @@ After you finish the ingestation, you can terminate the docker-compose with this
 ```bash
 docker-compose down
 ```
-## **SQL Refresher**
+## SQL Refresher
 
 Below are a series of SQL query examples to remember how SQL works. For this example we'll asume that we're working with 2 tables named `trips` (list of all yellow taxi trips of NYC for January 2021) and `zones` (list of zone IDs for pickups and dropoffs).
 
@@ -632,7 +641,7 @@ As a final note, SQL commands can be categorized into the following categories:
     - Not a universally considered category.
     - `COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`
 
-# Google Cloud Platform and Terraform
+# **1.3 Google Cloud Platform and Terraform**
 
 [Terraform](https://www.terraform.io/) is an  [Infrastructure as Code](https://en.wikipedia.org/wiki/Infrastructure_as_code)  (IaC) tool that allows us to facilitate infrastructure as code, hence making it possible to handle infrastructure an an additional software component and take advantage of tools such as version control. It also allows us to bypass the cloud vendor GUIs (Graphical User Interface).
 
@@ -854,9 +863,17 @@ terraform destroy
 
 Once again, you will have to confirm this step by typing `yes` when prompted. This will remove your complete stack from the cloud, so only use it when you're 100% sure of it.
 
+# **1.4 Extras**
 
+## Setting Up The Environment on Cloud VM
 
+If you cannot set up a local development environment, you may use part of the $300 credits of GCP in creating a Cloud VM and access to it via SSH to set up the environment there.
 
+[Follow the instructions in this video](https://www.youtube.com/watch?v=ae-CV2KfoN0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=12)
+
+## Port mapping and networks in Docker
+
+If you're having issues with Docker and networking (especially if you already have Postgres running locally in your host computer), a [videoguide is also available](https://www.youtube.com/watch?v=tOr4hTsHOzU).
 
 
 
