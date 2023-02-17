@@ -1,6 +1,4 @@
-<font size="+20">WEEK 1: BASIC AND SETUP</font>
-
----
+# WEEK 1: BASIC AND SETUP
 
 
 
