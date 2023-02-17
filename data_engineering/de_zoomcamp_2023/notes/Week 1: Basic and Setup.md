@@ -1,7 +1,5 @@
 # WEEK 1: BASIC AND SETUP
 
-
-
 ### Table of Contents
 
 [**1.1 Introduction to Data Engineering**](#11-introduction-to-data-engineering)
@@ -88,13 +86,13 @@ print(f'job finished successfully for day = {day}')
 ```
 
 We can run this script in CLI 
-```
+```bash
 python pipeline.py <day>
 ```
 
 It will print 2 lines:
 
-```
+```bash
 ['pipeline.py', '<day>']
 
 job finished successfully for day = <day>
@@ -120,7 +118,7 @@ ENTRYPOINT ["python", "pipeline.py"]
 
 Let's build the image:
 
-``` 
+```bash
 docker build -t tests:pandas .
 ```
 
@@ -128,13 +126,13 @@ docker build -t tests:pandas .
 
 We can check the our previous image in the docker by passing:
 
-``` 
+```bash
 docker images -ls
 ```
 
 Since the image is there, now we can run the container and pass an argument to it, so that our pipeline will receive it:
 
-``` 
+```bash
 docker run -it test:pandas some_number
 ```
 
@@ -149,7 +147,7 @@ You can run a containerized version of Postgres that doesn't require any install
 
 Create a foler anywhere you'd like for Postgres to store data in. We will use the example folder `data/ny_taxi_postgres_data`. Here's how to run the container:
 
-```
+```bash
 docker run -it \
     -e POSTGRES_USER="root" \
     -e POSTGRES_PASSWORD="root" \
@@ -178,7 +176,7 @@ docker run -it \
 
 [Once the container is runing, we can log into our database with [pgcli](https://www.pgcli.com/) with the following command:
 
-```
+```bash
 pgcli -h localhost -p 5432 -u root -d ny_taxi
 ```
 
@@ -204,14 +202,14 @@ Check the completed `upload-data.ipynb` [here](https://github.com/acothaha/learn
 
 Let's create a virtual Docker network called `pg-network` to connect pgAdmin and our Postgres database:
 
-```
+```bash
 docker network create pg-network
 ```
 > network can be removed with command `docker network rm pg-network`. look at List all of the existing network with `docker network ls`
 
 Now, we will run our Postgres container and adding the network name, so that it can be connected with pgAdmin container (we will pass `pg-database` as the container name):
 
-```
+```bash
 docker run -it \
     -e POSTGRES_USER="root" \
     -e POSTGRES_PASSWORD="root" \
@@ -225,7 +223,7 @@ docker run -it \
 
 Now, we will run the pgAdmin container on other terminal:
 
-```
+```bash
 docker run -it \
     -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
     -e PGADMIN_DEFAULT_PASSWORD="root" \
@@ -258,7 +256,7 @@ Click on *Save*. You should now be connected to the database.
 
 There is a convenient way to export `ipynb` file into `py`. Use this command:
 
-```
+```bash
 jupyter nbconvert --to=script upload-data.ipynb
 ```
 
@@ -290,7 +288,7 @@ DROP TABLE yellow_taxi_data;
 
 We are now ready to test the script with the following command:
 
-```
+```bash
 URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
 
 python ingest_data.py \
@@ -334,13 +332,13 @@ ENTRYPOINT [ "python", "ingest_data.py" ]
 
 build the image:
 
-```
+```bash
 docker build -t taxi_ingest:v001 .
 ```
 
 and run it:
 
-```
+```bash
 URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
 
 docker run -it \
@@ -392,14 +390,14 @@ services:
 
 We can now run Docker compose by running the following command from the same directory where `docker-compose.yaml` is found. Make sure that all previous containers aren't running anymore:
 
-```
+```bash
 docker-compose up
 ```
 > NOTE: this command assumes that the `ny_taxi_postgres_data` used for mounting the volume is in the same directory as docker-compose.yaml
 
 And if you want to run the container again in the background rather than in the foreground (freeing up your terminal), you can run them in detached mode:
 
-```
+```bash
 docker-compose up -d
 ```
 
@@ -407,7 +405,7 @@ If you want to re-run the dockerized ingest script when you run Postgres and pgA
 
 After you finish the ingestation, you can terminate the docker-compose with this command:
 
-```
+```bash
 docker-compose down
 ```
 ## **SQL Refresher**
@@ -633,3 +631,237 @@ As a final note, SQL commands can be categorized into the following categories:
     - Transactions within the database.
     - Not a universally considered category.
     - `COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`
+
+# Google Cloud Platform and Terraform
+
+[Terraform](https://www.terraform.io/) is an  [Infrastructure as Code](https://en.wikipedia.org/wiki/Infrastructure_as_code)  (IaC) tool that allows us to facilitate infrastructure as code, hence making it possible to handle infrastructure an an additional software component and take advantage of tools such as version control. It also allows us to bypass the cloud vendor GUIs (Graphical User Interface).
+
+In this opportunity, we will utilize [Google Cloud Platform](https://cloud.google.com/) (GCP) as our cloud services provider.
+
+## GCP Initial Setup
+
+GCP is organize around *projects*. You may create a project and access all available GCP resources and services from the projects dashboard.
+
+We will now create a project and a *service account* then we will download the authentication keys to our computer. A *service account* is like a user account but for apps and workloads; you may authorize or limit what resources are available to your apps with service accounts.
+
+Follow these steps along:
+
+1. Create an account on GCP. You should receive $300 in credit when signing up on GCP for the first time with an account.
+2. Setup a new project and write down the Project ID.
+    - From the GCP Dashboard, click on the drop down menu next to the *Google Cloud Platform* title to show the project list and click on *New project*.
+    - Give the project a name. You can use the autogenerated Project ID (this ID must be unique to all of GCP, not just your account). Leave the organization as *No organization*. Click on *Create*.
+    - Back on the dashboard, make sure that your project is selected. Click on the previous drop down menu to select it otherwise.
+3. Setup a service account for this project and download the JSON authentication key files.
+    - *IAM & Admin* > *Service accounts* > *Create service account*
+    - Provide a service account name. Leave all other fields with the default values. Click on *Create and continue*.
+    - Grant the Viewer role (*Basic > Viewer*) to the service account and click on *Continue*
+    - There is no need to grant users access to this service account at the moment. Click on *Done*.
+    - With the service account created, click on the 3 dots below *Actions* and select *Manage keys*.
+    - *Add key* > *Create new key*. Select *JSON* and *click Create*. The files will be downloaded to your computer. Save them to a folder and write down the path.
+4. Download the [GCP SDK](https://cloud.google.com/sdk/docs/install-sdk) for local setup. Follow the instructions to install and connect to your account and project.
+5. Set the environment variable to point to the auth keys.
+    - The environment variable name is `GOOGLE_APPLICATION_CREDENTIALS`
+    - The value for the variable is the path to the JSON authentication file you downloaded previously.
+    - Check how to assign environment variables in your system and shell. In bash, the command should be: 
+    ```bash
+    export GOOGLE_APPLICATION_CREDENTIALS="<path/to/authkeys>.json"
+    ```
+    - Refresh the token and verify the authentication with the GCP SDK
+    ```bash
+    gcloud auth application-default login
+    ```
+
+You should now be ready to work with GCP!!
+
+## GCP Setup for Access
+
+In the following chapters we will setup a *Data Lake* on Google Cloud Storage and a *Data Warehouse* in BigQuery. We will explore these concepts in future lessons but a Data Lake is where we would usually store data and a Data Warehouse provides a more structured way to access this data.
+
+We need to setup access first by assigning the Storage Admin, Sotrage Object Admin, BigQuery Admin and Viewer IAM roles to the Service Account, and then enable the `iam` and `iamcredentials` APIs for our project.
+
+Follow these steps along:
+1. Assign the following IAM Roles to the Service Account: Storage Admin, Storage Obejct Admin, BigQuery Admin and Viewer.
+    - On the GCP project dashboard, go to *IAM & Admin* > *IAM*
+    - Select the previously created Service Account and edit the permissions by clicking on the pencil shaped icon on the left.
+    - Add the following roles and clock on *Save* afterwards:
+        - `Storage Admin`: for creating and managing *buckets*
+        - `Storage Objectt Admin`: for creating and managing objects within the buckets.
+        - `BigQuery Admin`: for managin BigQuery resources and data.
+        - `Viewer`: should be already present as a role
+
+2. Enable APIs for the project (these are needed so that Terraform can interact with GCP)
+    - https://console.cloud.google.com/apis/library/iam.googleapis.com
+    - https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
+3. Make sure that the `GOOGLE_APPLICATION_CREDENTIALS` environment variable is set.
+
+## Terraform Basics
+
+There are 2 important components of Terraform: The code files and Terraform commands.
+
+The set of files used to describe infrastructure in Terraform is known as a Terraform ***configuration***. Terraform configuration files end up in `.tf` for files written in Terraform language or `tf.json` for JSON files. A terraform configuration must be in its own working directory; you cannot have 2 or more seperate configurations in the same folder.
+
+Here's a basic `main.tf` file written in Terraform language with all of the necessary info to describe a basic infrastructure
+
+```Java
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "3.5.0"
+    }
+  }
+}
+
+provider "google" {
+  credentials = file("<NAME>.json")
+
+  project = "<PROJECT_ID>"
+  region  = "us-central1"
+  zone    = "us-central1-c"
+}
+
+resource "google_compute_network" "vpc_network" {
+  name = "terraform-network"
+}
+```
+- Terraform divides information into ***blocks***, which are defined within braces (`{}`), similar to Java or C++. However, unlike those languages, statements are not required to end with a semicolon (`;`) but used linebreaks instead.
+- By convention, arguments with singe-line values in the same nesting level have their equal signs (`=`) aligne for easier reading.
+- There are 3 main blocks: `terraform`, `provider` amd `resource`. There must only be a single `terraform` block but there may be multiple `provider` and resource blocks.
+    - The `required_providers` sub-block specifies the providers required by the configuration. In this example there's only a single provider which we've called `google`.
+        - a *provider* is a plugin that Terraform uses to create and manage resources.
+        - Each provider need a source in order to install the right plugin. By default the Hashicorp repository is used, in a similar way to Docker images.
+            - `hashicorp/google` is short for `registry.terraform.io/hashicorp/google`.
+        - Optionallym a provider can have an enforced `version`. If this is not specified, the latest version will be used by default, which could introduce breaking changes in some rare cases.
+    - We'll see other settings to use in this block later.
+- The `provider` block configures a specific provider. Since we only have a single provider, there's only a single `provider` block for the `google` provider.
+    - The content of a provider block are provider-specific. The contents in this example are meant for GCP but may differ for AWS or Azure.
+    - Some of the variables seen in this example, such as `credentials` or `zone`, can be provided by other means which will be covered later.
+- The resource blocks have 2 strings before the block: the resource ***type*** and the resource ***name***. Together they create the *resource ID* in the shape of `type.name.
+    - about resource type:
+        - The first prefix if the resource type maps to the name of the provider. For example, the resource type `google_compute_network` has the prefix `google` which means it maps to the provider `google`.
+        - The resource types are defined in the Terraform documentation and refer to resources that cloud providers offer. In this example, `google_compute_network` [(Terraform documentation link)](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_network) refers to GCP's [Virtual Private Cloud service](https://cloud.google.com/vpc)
+    - Resource names are the internal names that we use in our Terraform configuration to refer to each resource and have no impact on the actual infrastructure.
+    - The contents of a resource block are specific to the resource type. [Check the Terraform docs](https://registry.terraform.io/browse/providers) to see a list of resource types by provider.
+        - In this example, the `google_compute_network` resource type has a single mandatory argument called `name`, which is the name that the resource will have within GCP's infrastructure.
+            - Do not confuse the *resource name* with the `name` argument!
+
+besides these 3 blocks, there are additional available blocks:
+
+- ***Input variables*** block types are useful for customizing aspects of other blocks without altering the other blocks' source code. They are often referred to as simply *variables*. They are passed at runtime.
+
+    ```Java
+    variable "region" {
+        description = "Region for GCP resources. Choose as per your location: https://cloud.google.com/about/locations"
+        default = "asia-east1"
+        type = string
+    }
+    ```
+
+    - Description:
+        - An input variable block starts with the type `variable` followed by a name.
+        - The block may contain a number of fields. In this example we use the fields `description`, `type` and `default`
+            - `description` contains a simple descrription for documentation purposes.
+            - `type` specifies the accepted value types for the variable.
+            - if the `default` field is defined, the variable becomes optional because a default value is already provided by this field. Otherwise, a value muse be provided when running the Terraform configuration.
+        - For additional fields in input variable block, check the [Terraform docs](https://developer.hashicorp.com/terraform/language/values/variables).
+    - variables must be accessed with the keyword `var.` and then the name of the variable.
+    - in our main.tf file above, we could access this variable inside the google provider block with this line:
+    ```
+    region = var.region
+    ```
+
+- ***Local values*** block behave more like constants.
+
+    ```
+    locals{
+        region  = "asia-east1"
+        zone    = "asia-east1-a"
+    }
+    ```
+    - Description:
+        - Local values may be grouped in one or more bloccs of type `locals`. 
+        - Local values are simple to declare that input variables because they are only a key-value pair.
+    - Local values must be accessed with the word `local` (*mind the lack of `s` at the end!*)
+        ```
+        region = local.region
+        zone = local.zone
+        ```
+with a configuration set in place, you are now ready to create your infrastructure, There are a number of commands that must be followed:
+- `terraform init`: Initialize your work directory by downloading the necessary providers/plugins.
+- `terraform fmt` (optional): Formats your configuration files so that the format is consistent.
+- `terraform validate` (optional): Returns a success message if the configuration is valid and no errors are apparent.
+- `terraform plan`: Creates a preview of the changes to be applied againts a remote state, allowing you to review the changes before applying them.
+- `terraform apply`: Applies the changes to the infrastructure.
+- `terraform destroy`: Removes your stack from the infrastructure.
+
+## Creating GCP Infrastructure with Terraform
+
+WE will now create a new `main.tf` file as well as an auxiliary `variables.tf` file with all the blocks which we need for our project.
+
+In `main.tf` we will configure the `terraform` block as follows:
+
+
+```java
+terraform {
+  required_version = ">= 1.0"
+  backend "local" {}  # Can change from "local" to "gcs" (for google) or "s3" (for aws), if you would like to preserve your tf-state online
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+    }
+  }
+}
+```
+
+- The required_version field states the minimum Terraform version to be used.
+- The backend field state where we'd like to store the *state* of the infrastructure. `local` means that we will store it locally in our machine. Alternatively, you can change `local` to `gcs` (for google) or `s3` (for aws), if you would like to preserve your state online.
+
+The provider will not make use of the `credentials` field because when we set ip GCP access, we already created a `GOOGLE_APPLICATION_CREDENTIALS` env/var which Terraform can read in order to get our authentication keys.
+
+in the `variables.tf`, we will store variables that may change depending on your needs and location. the ones to note are:
+
+-  `region` may vary depending on your geographical location; choose the on that close to you.
+- `BQ_DATASET` has the name of the table for BigQuery. You may leave it as it is or change it to fit your needs.
+- `project` is the Project ID of your project in GCP. Since the ID is unique, it is good practice to have Terraform in case the same code is applied in different projects.
+
+You may access `main.tf` ([here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_1_basics_n_setup/1_terraform_gcp/terraform/main.tf)) and `variables.tf` ([here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_1_basics_n_setup/1_terraform_gcp/terraform/variables.tf)).
+
+Now it's time to run the terraform commands:
+
+```bash
+terraform init
+```
+This will dowload the necessary plugins to connect to GCV and download them to `./.terraform`. Now let's plan the infrastructure:
+
+```bash
+terraform plan
+```
+Terraform will ask for your Project ID (if you didn't specify it in `variables.tf`). Type it and press enter to let Terraform access GCP and figure out what to do. The infrastructure plan will be printed on screen will all the planned changes marked with a `+` sign next to them.
+
+Let's apply the changes:
+
+```bash
+terraform apply
+```
+
+You will need to confirm this step by typing `yes` when prompted. This will create all the necessary components in the infrastructure and return a `terraform.tfstate` with the current state of the infrastructure.
+
+After you've successfully created the infrastructure, you may destroy it so that it doesn't consume credit unnecessarily:
+
+```bash
+terraform destroy
+```
+
+Once again, you will have to confirm this step by typing `yes` when prompted. This will remove your complete stack from the cloud, so only use it when you're 100% sure of it.
+
+
+
+
+
+
+
+
+
+
+
+    
