@@ -1,28 +1,6 @@
-<style>
-.nine h1 {
-  text-align:center; t
-  ext-transform:uppercase;  
-  letter-spacing:1px;
-  font-family: "Raleway", sans-serif;
-  font-size: 50px;
-  font-weight: 600;
+<div align="center"><font size="10"> WEEK 1: BASIC AND SETUP</font></div>
 
-}
-
-.nine h1 span:after,.nine h1 span:before {
-    content: " ";
-    display: block;
-    height: 1px;
-  background-color :#FFECFB
-}
-
-</style>
-
-<div class="nine">
-  <h1>BASIC AND SETUP<span></span></h1>
-</div>
-
-
+---
 
 ### Table of Contents
 
