@@ -6,17 +6,12 @@
   font-family: "Raleway", sans-serif;
   font-size: 50px;
   font-weight: 600;
-  background-image: conic-gradient(#F7A183 0.1%, #FCFCFC 40%, #FCFCFC , #00c2cb 70%, #F7A183 80%);
-  color: transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
+
 }
 
 .nine h1 span:after,.nine h1 span:before {
     content: " ";
     display: block;
-    /* border-bottom: 1px solid #ccc; */
-    /* border-top: 1px solid #ccc; */
     height: 1px;
   background-color :#FFECFB
 }
