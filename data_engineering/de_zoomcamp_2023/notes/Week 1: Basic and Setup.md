@@ -1,6 +1,13 @@
-<div align="center"><font size="10"> WEEK 1: BASIC AND SETUP</font></div>
+
+<div style="text-align: center;">
+    <span align="center" style="font-weight:700;font-size:40px">
+        WEEK 1: BASIC AND SETUP
+    </span>
+</div>
 
 ---
+
+
 
 ### Table of Contents
 
