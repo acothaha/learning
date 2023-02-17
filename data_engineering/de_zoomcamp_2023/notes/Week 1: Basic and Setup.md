@@ -1,9 +1,4 @@
-
-<div style="text-align: center;">
-    <span align="center" style="font-weight:700;font-size:40px">
-        WEEK 1: BASIC AND SETUP
-    </span>
-</div>
+<font size="+20">WEEK 1: BASIC AND SETUP</font>
 
 ---
 
