@@ -154,7 +154,7 @@ you will get the same output you did when you ran the pipeline script itself.
 
 You can run a containerized version of Postgres that doesn't require any installation steps. You only need to provide a few *environment* variables to it as well as a *volume* for storing data.
 
-Create a foler anywhere you'd like for Postgres to store data in. We will use the example folder `data/ny_taxi_postgres_data`. Here's how to run the container:
+Create a folder anywhere you'd like for Postgres to store data in. We will use the example folder `data/ny_taxi_postgres_data`. Here's how to run the container:
 
 ```bash
 docker run -it \
@@ -183,7 +183,7 @@ docker run -it \
 
 > Note: `-it` is short for --interactive. When you docker run with this command, it takes you straight inside the container.
 
-[Once the container is runing, we can log into our database with [pgcli](https://www.pgcli.com/) with the following command:
+[Once the container is running, we can log into our database with [pgcli](https://www.pgcli.com/) with the following command:
 
 ```bash
 pgcli -h localhost -p 5432 -u root -d ny_taxi
@@ -197,7 +197,7 @@ pgcli -h localhost -p 5432 -u root -d ny_taxi
 
 ## Ingesting Data To Postgres With Python
 
-We will now use Jupyter Notebook to read a SCV file and export it into Postgres.
+We will now use Jupyter Notebook to read a CSV file and export it into Postgres.
 
 We will use data from the [NYC TLC Trip Record Data website](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page). Specifically, we will use the [Yellow taxi trip records CSV file for January 2021](https://github.com/DataTalksClub/nyc-tlc-data/releases/tag/yellow). A dictionary to understand each field is available [here](https://www1.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf).
 
@@ -207,14 +207,14 @@ Check the completed `upload-data.ipynb` [here](https://github.com/acothaha/learn
 
 ## Connecting pgAdmin and Postgres
 
-`pgcli` is useable but it's not really practical to utilize. [`pgAdmin`](https://www.pgadmin.org/download/) on the other hand, make it easier to access and manage our Postgres databases. it's possible to run pgAdmin as a container along with the postgres container, but both containers will have to be in the same *virtual network* so that they can connect to each other.
+`pgcli` is useable but it's not really practical to utilize. [`pgAdmin`](https://www.pgadmin.org/download/) on the other hand, make it easier to access and manage our Postgres databases. it's possible to run pgAdmin as a container along with the Postgres container, but both containers will have to be in the same *virtual network* so that they can connect to each other.
 
 Let's create a virtual Docker network called `pg-network` to connect pgAdmin and our Postgres database:
 
 ```bash
 docker network create pg-network
 ```
-> network can be removed with command `docker network rm pg-network`. look at List all of the existing network with `docker network ls`
+> network can be removed with command `docker network rm pg-network`. look at list all of the existing network with `docker network ls`
 
 Now, we will run our Postgres container and adding the network name, so that it can be connected with pgAdmin container (we will pass `pg-database` as the container name):
 
