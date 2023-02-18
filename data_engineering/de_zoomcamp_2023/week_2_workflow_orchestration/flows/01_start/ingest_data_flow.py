@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import argparse
-import os
 from sqlalchemy import create_engine
 from time import time, sleep
 from prefect import flow, task
@@ -10,7 +8,7 @@ from prefect_sqlalchemy import SqlAlchemyConnector
 from datetime import timedelta
 
 @task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
-def extract_data(url):
+def extract_data(url: str) -> pd.DataFrame:
     if url.endswith('.csv.gz'):
         csv_name = 'output.csv.gz'
     else:

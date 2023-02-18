@@ -191,7 +191,209 @@ In order to install all of the libraries in the `txt` file, we need to run
 pip install -r requirements.txt
 ```
 
-Now, we can transform the `ingest_data.py` script we created in Week 1 into tasks and flows. Please take a look at the transformed script ``
+Now, we can transform the `ingest_data.py` script we created in Week 1 into tasks and flows.
+
+1. load the necessary libraries
+
+```Python
+import pandas as pd
+import numpy as np
+from sqlalchemy import create_engine
+from time import time, sleep
+from prefect import flow, task
+from prefect.tasks import task_input_hash
+from prefect_sqlalchemy import SqlAlchemyConnector
+from datetime import timedelta
+```
+
+2. using `@task` to define a task then we wreate an extract function which will help us extract data from the given url, where the url is an argument in the function.
+
+```python
+@task(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+def extract_data(url: str) -> pd.DataFrame:
+    if url.endswith('.csv.gz'):
+        csv_name = 'output.csv.gz'
+    else:
+        csv_name = 'output.csv'
+
+    os.system(f"wget {url} -O {csv_name}")
+
+    df = pd.read_csv(csv_name)
+    
+    df['tpep_dropoff_datetime'] = pd.to_datetime(df['tpep_dropoff_datetime'])
+    df['tpep_pickup_datetime'] = pd.to_datetime(df['tpep_pickup_datetime'])
+
+    return df
+```
+
+3. Next we create a transform function which will help us transform the data
+
+```python
+@task(log_prints=True)
+def transform_data(df: pd.DataFrame) -> pd.DataFrame:
+
+    print(f'pre: missing passenger count {df["passenger_count"].isin([0]).sum()}')
+    df = df.loc[df['passenger_count'] != 0]
+    print(f'post: missing passenger count {df["passenger_count"].isin([0]).sum()}')
+
+    return df
+```
+
+4. Next we create a load function which will help us load the data
+
+```python
+@task(log prints=True, retries=3)
+def load_data(user, password, host, port, db, table_name, df):
+
+    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
+    df.head(0).to_sql(name=table_name, con=engine, if_exists='replace')
+    df.to_sql(name=table_name, con=engine, if_exists='append')
+
+    print("Finished ingesting data into the postgres database")
+```
+
+5. Finally, we create a main function which will help us run all of these functions
+
+```python
+@flow(name="Ingest Data")
+def main_flow(table_name: str = "green_taxi_trips"):
+    user = "root"
+    password = "root"
+    host = "localhost"
+    port = "5432"
+    db = "ny_taxi"
+    table_name = "green_taxi_trips"
+    csv_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-01.csv.gz" 
+
+    raw_data = extract_data(csv_url)
+    data = transform_data(raw_data)
+    load_data(user, password, host, port, db, table_name, data)
+
+if __name__ == '__main__':
+    main_flow(table_name = "green_trips")
+```
+
+After finishing the script transformation, we can run the script
+
+```bash
+python ingest_data_flow.py
+```
+> Note: ***Don't forget to run your Posgres databases!!*** (Use docker-compose is fine)
+
+After the ingestation process is complete, you can check whether the data was loaded using `pgAdmin`.
+
+## Parameterization and Subflows
+`Parameterization` is the process of defining a flow that can be executed with different input parameters. It allows you to run the same flow multiple times with different inputs, making it easier to manage and reuse your workflows.
+
+`Subflows` refer to the ability to define a flow as a reusable component that can be used as a task within another flow. Subflows can be used to encapsulate complexe workflows or to define reusable components that can be reused across multiple flows.
+
+Let's update our `ingest_data_flow.py` to make it more parameterized.
+
+1. Add a new flow to print the number of rows from our table
+
+```python
+@flow(name='row_counter_subflow', logprints=True)
+def row_counter(df: pd.DataFrame):
+    print(f'Number of rows: {df.shape[0]}')
+```
+
+2. Then we add the subflow to our main flow
+
+```python
+@flow(name="Ingest Data")
+def main_flow(table_name: str = "green_taxi_trips"):
+    user = "root"
+    password = "root"
+    host = "localhost"
+    port = "5432"
+    db = "ny_taxi"
+    table_name = "green_taxi_trips"
+    csv_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-01.csv.gz" 
+
+    raw_data = extract_data(csv_url)
+    data = transform_data(raw_data)
+    row_counter(data) # adding a new subflow
+    load_data(user, password, host, port, db, table_name, data)
+
+if __name__ == '__main__':
+    main_flow(table_name = "green_trips")
+```
+
+## Orion UI
+`Orion UI` is a user interface for Prefect, a popular open-source workflow management system for data engineering, data science, and machine learning. The Orion UI provides a *graphical interface* for managing and visualizing Prefect flows, tasks, and runs.
+
+To start Orion UI, we need to start with setting the Prefect API URL in the Prefect configuration by running
+
+```bash
+prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+```
+By setting the Prefect API URL to http://127.0.0.1:4200/api, you are telling Prefect to use a local instance of the Prefect API running at http://127.0.0.1:4200/api.
+
+
+
+and in order to start the UI, we can run 
+
+```bash
+prefect orion start
+```
+
+![prefect_cli](images/prefect_orion.png)
+![prefect_ui](images/prefect_orion2.png)
+
+## Blocks
+
+`Blocks` enable you to store configuration and provide an interface for interacting with external systems. With Blocks, you are securely store credentials for authentication with services like GCP, AWS, Github, Slack or any other system you'd like to orchestrate with Prefect
+
+You can create, edit, and manage blocks in the Prefect UI and Prefect Cloud. On a `Prefect Orion` API server, blocks are created in the server's database. On `Prefect Cloud`, blocks are created on a workspace.
+
+In our `ingest_data_flow.py`, instead of hard-coding all of the input credentials (url, user, password, etc). We can create a block which can store the credentials and can be called directly.
+
+We can do it the following way:
+
+1. Go to *Blocks* -> add new block -> select *SQLAlchemy Connector* and fill all of the fields
+
+![prefect_block](images/prefect-block.png)
+
+After you create the block, you should see something like this:
+
+![prefect_block_finish](images/prefect-block2.png)
+
+After you created the block, we can directly use it in our code spesifically in the `@task` **load_data** in the following way
+
+```python
+from prefect_sqlalchemy import SqlAlchemyConnector
+
+@task(log_prints=True, retries=3)
+def ingest_data(table_name, df):
+    
+    connection_block = SqlAlchemyConnector.load("de-zoomcamp-pgconnector")
+    
+    with connection_block.get_connection(begin=False) as engine:
+
+        df.head(0).to_sql(name=table_name, con=engine, if_exists='replace')
+        df.to_sql(name=table_name, con=engine, if_exists='append')
+
+    print("Finished ingesting data into the postgres database")
+```
+# **2.3 ETL with GCP & Prefect**
+
+Let's start with writing an ETL script for saving data locally and uploading it to GCP (The script is [here]())
+
+Open *Prefect Orion UI* and create a `GCS bucket` block
+
+![gcs_bucket](images/gcs-bucket.png)
+
+If GCS Bucket in not available, go to terminal and run
+
+```bash
+prefect block register -m prefect_gcp
+```
+
+Configure the GCS Bucket with the **GCP Bucket ID** of yours. If you haven't created the bucket, you can go see the [Week 1: Basic and Setup](). On top 
+
+
+
+
     
 
 
