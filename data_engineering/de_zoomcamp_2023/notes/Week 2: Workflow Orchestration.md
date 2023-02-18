@@ -158,7 +158,40 @@ In Prefect, you can use decorators to add additional functionality to your tasks
     - `retries`: number of times to retry on flow run failure
     - `retry_delay_seconds`: number of seconds to wait before retrying the flow after failure
 
+## Loading data into Postgres using Prefect
 
+We will start with creating a **new conda environment** so that we can install all the relevant libraries withour affecting the base environment. run this command on your terminal of choice, in this one I use `GitBash`
+
+```bash
+conda create -n zoomcamp python=3.9
+```
+
+Then activate the environment by running
+
+```bash
+conda activate zoomcamp
+```
+
+Next, we create a `requirements.txt` file which contains all the relevant libraries which will be used for this project then save it in your working directory
+
+```bash
+pandas==1.5.2
+prefect==2.7.7
+prefect-sqlalchemy==0.2.2
+prefect-gcp[cloud_storage]==0.2.4
+protobuf==4.21.11
+pyarrow==10.0.1
+pandas-gbq==0.18.1
+psycopg2-binary==2.9.5
+sqlalchemy==1.4.46
+```
+In order to install all of the libraries in the `txt` file, we need to run
+
+```bash
+pip install -r requirements.txt
+```
+
+Now, we can transform the `ingest_data.py` script we created in Week 1 into tasks and flows. Please take a look at the transformed script ``
     
 
 
