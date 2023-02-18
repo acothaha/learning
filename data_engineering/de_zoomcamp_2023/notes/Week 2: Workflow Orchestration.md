@@ -377,7 +377,7 @@ def ingest_data(table_name, df):
 ```
 # **2.3 ETL with GCP & Prefect**
 
-Let's start with writing an ETL script for saving data locally and uploading it to GCP (The script is [here]())
+Let's start with writing an ETL script for saving data locally and uploading it to GCP (The script is [etl_web_to_gcs.py](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_2_workflow_orchestration/flows/02_gcp/etl_web_to_gcs.py))
 
 Open *Prefect Orion UI* and create a `GCS bucket` block
 
@@ -389,9 +389,119 @@ If GCS Bucket in not available, go to terminal and run
 prefect block register -m prefect_gcp
 ```
 
-Configure the GCS Bucket with the **GCP Bucket ID** of yours. If you haven't created the bucket, you can go see the [Week 1: Basic and Setup](). On top 
+Configure the GCS Bucket with the **GCP Bucket ID** of yours. If you haven't created the bucket, you can go see the [Week 1: Basic and Setup](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/notes/Week%201:%20Basic%20and%20Setup.md#creating-gcp-infrastructure-with-terraform). On top of that, if no GCP credentials Block has been created yet, we need to craete one by clicking `add +`.
+
+![gcs-bucket2](images/gcs-bucket2.png)
+
+Create a `GCP Credentials block`, you can inform the path to your JSON credential file or the content of JSON itself.
 
 
+![gcs-bucket3](images/gcs-bucket3.png)
+
+After we create the GCP Credentials block, we will be redirected to the GCS Bucket block tab. Select the Credentials block that has just been created and click on `Create`
+
+![gcs-bucket4](images/gcs-bucket4.png)
+
+Afterwards, we will see how we can utilize the GCS Bucket block inside our Python script. Since the `etl_web_to_gcs.py` is already finished, we will just run it.
+
+```bash
+python etl_web_to_gcs.py
+```
+
+Then you can check the uploaded data in GCP
+
+# **2.4 From Google Cloud Storage to Big Query**
+
+In this part, we will implement an ETL script to extract data from `GCS` then transform and load it into `BigQuery` (The script is [etl_gcs_to_bq.py](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_2_workflow_orchestration/flows/02_gcp/etl_gcs_to_bq.py))
+
+First, we need to create a table in BigQuery to store our data from GCS
+
+![create_table](images/create_table.png)
+
+Next, fill the form and click `Create`
+
+![create_table](images/create_table2.png)
+
+Since we create the table using our dataset stored in GCS as a template, BigQuery has already populated our dataset. To test our script, let's delete all data. First, click on the table we have just created and click on "Query".
+
+![create_table](images/create_table3.png)
+
+and input this query:
+
+```SQL
+DELETE FROM `[your_project].[your_dataset].yellow_taxi_trips` WHERE TRUE
+```
+
+After running the query, you will get this in the `result` tab
+
+![create_table](images/create_table4.png)
+
+Now it's the time to populate the table in BigQuery from data in GCS, run the ETL script
+
+```bash
+python etl_gcs_to_bq.py
+```
+
+Now we can check whether the data has been updated or not by running this query.
+
+```SQL
+SELECT * FROM `[your_project].[your_dataset].yellow_taxi_trips` LIMIT 100
+```
+
+# **2.5 Parametrizing Flow & Deployments**
+
+## Using Prefect CLI and UI for deployments
+
+***Prefect Deployment*** refers to the process of deploying a Prefect workflow to a production environment so that it can be run on a schedule or triggered by *external events*. There are several ways to deploy a Prefect workflow, depending on the specific requirements and constraints of your use case.
+
+We will start with creating a new script to have multiple runs of flows with different `parameters` that affect the outcome, we will reuse `etl_web_to_gcs.py` and do some tweaking so it will load multiple data into GCS (The script is [parameterized_flow.py](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_2_workflow_orchestration/flows/03_deployment/parameterized_flow.py))
+
+You can try to run it first
+
+```bash
+python parameterized_flow.py
+```
+
+After it finish running, you can check the result in GCS
+
+![parameterized](images/parameterized.png)
+
+Now, we can use the following commad to create a deployment package
+
+```bash
+prefect deployment build ./parameterized_flow.py:etl_parent_flow -n "Parameterized ETL"
+```
+
+Above command is used to build a Prefect workflow deployment. The build takes a *Python file* and a *workflow* as arguments. In this case, the file is the one that we created earlier `parameterized_flow.py` and the workflow object is `etl_parent_flow`. The `-n` or `--name` flag is used to specify a name for the deployment, in this case, `"Parameterized ETL"`
+
+The output will be a YAML file containing the workflow's deployment metadata.
+
+In the metadata YAML file (`etl_parent_flow-deployment.yaml`), we can add the parameters that we want to run in the line `parameters: {}`
+
+```YAML
+parameters : { "color": "yellow", "months": [1, 2, 3], "year": 2021 }
+```
+
+Then, we can run the following command to apply the deployment
+```bash
+prefect deployment apply etl_parent_flow-deployment.yaml
+```
+We can see the deployment in the Prefect Orion UI, and you can try to do a *quick run*
+
+![deployment](images/deployment.png)
+
+As can be seen above, there are 2 types of `run`:
+
+- `Quick Run` : Simpler way to run a workflow, providing only a limited set of options
+- `Custom Run` : Allows you to manually specify the input parameters and environment variables for a run, and provides greater control over the execution of the workflow.
+
+But before we run the workflow, We must be familiar with the concept of `Core`, `Work Queues` and `Agents`.
+
+- `Prefect Core` : The ***backend component*** of Prefect. Prefect Core providers the building blocks for *defining*, *scheduling*, *executing* and *monitoring* data workflows. It provides APIs for creating and manipulating workflows, tasks and flows.
+
+- `Work Queue` : The data structure that holds tasks that are ready to be executed. Acts as a buffer between the `Prefect Core` and the `Agents`, allowing the Core to manage tasks while the agents execute them.
+
+- `Agent` : A piece of software that pulls tasks from the `Work Queue` and executes them.
 
 
     
