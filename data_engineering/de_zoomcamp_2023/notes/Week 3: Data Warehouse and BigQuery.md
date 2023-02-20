@@ -1,9 +1,7 @@
 # WEEK 3: DATA WAREHOUSE AND BIGQUERY
 ---
 
-## Table of Contents
-
-
+### Table of Contents
 
 [**3.1 Data Warehouse And BigQuery**](#31-data-warehouse-and-bigquery)
 * [OLAP vs OLTP](#olap-vs-oltp)
@@ -26,54 +24,55 @@
 
 
 
-## 3.1 Data Warehouse And BigQuery
+# **3.1 Data Warehouse And BigQuery**
 
-### **OLAP vs OLTP**
+## OLAP vs OLTP
 
-OLAP -> Online Analytical Processing
+`OLAP` -> Online Analytical Processing
 
-OLTP -> Online Transactional Processing
+`OLTP` -> Online Transactional Processing
 
 |       | OLTP | OLAP |
 | ----------- | ----------- |----------- |
-| Purpose | Control and run essential business operations in real life | Plan, solve problems, support decisions and discover hidden insights |
-| Data update | Shirt, fast updates initiated by users | Data periodically refreshed with scheduled, long running batch job |
-| Database design | Normalized databases for effeciency | Denormalized databases for analysis |
-| Space requirements | Generally small if historical data is archived | Generally large due to aggregating large dataset |
-| Backup and recovery | Regular backups required to ensure business continuity and meet legal and governence requirements | Lost data can be reloaded from OLTP database as needed in lieu of reguler backups |
-| Productivity | Increase productivity of end users | Increase productivity of business managers, data analysts and executives |
-| Data view | Lists day-to-day business transactions | Multi dimensional view of enterprise data |
+| Purpose | `Control` and `run essential` business operations in real life | `Plan`, `solve` problems, `support` decisions and `discover` hidden insights |
+| Data update | `Short`, fast updates initiated by users | Data periodically refreshed with scheduled, `long` running batch job |
+| Database design | `Normalized` databases for effeciency | `Denormalized` databases for analysis |
+| Space requirements | Generally `small` if historical data is archived | Generally `large` due to aggregating large dataset |
+| Backup and recovery | `Regular backups` required to ensure business continuity and meet legal and governence requirements | Lost data can be `reloaded` from OLTP database as needed in lieu of reguler backups |
+| Productivity | Increase productivity of `end users` | Increase productivity of `business managers`,` data analysts `and `executives` |
+| Data view | Lists `day-to-day` business transactions | `Multi dimensional` view of enterprise data |
 | User examples | Customer-facing personel, clerks, online shoppers | Knowledge workers, data analysts, business analyst and executives |
 
 
-### **Data Warehouse**
+## Data Warehouse
 
-Data warehouse is an OLAP solution that can be used for reporting and data analysis
+`Data warehouse` is an OLAP solution that can be used for reporting and data analysis
 
 ![Alt text](images/Data%20warehouse.png)
 
-### **BigQuery**
+## BigQuery
 
-BigQuery is a serverless data warehouse. It is a Software as well as infrastructure that provide scalability and high availability.
+`BigQuery` is a ***serverless*** data warehouse. It is a Software as well as infrastructure that provide scalability and high availability.
 
 Built-in features
-  - Machine learning
-  - Geospatial analysis
-  - Bussiness intelligence
+  - *Machine learning*
+  - *Geospatial analysis*
+  - *Business intelligence*
+
 BigQuery maximizes flexibility by separating the compute engine that analyze data from storage
 
-### **BigQuery Cost**
+## BigQuery Cost
 
-On demand pricing
+`On demand` pricing
 
   - 1 TB of data processed = $5
 
-Flat rate pricing
+`Flat rate` pricing
 
   - Based on number of pre requested slots
   - 100 slots -> $2000/month = 400 TB data processed on demand pricing
 
-### **BigQuery Query**
+### BigQuery Query
 
 Query public available table
 ``` SQL
@@ -82,7 +81,7 @@ SELECT station_id, name FROM
 LIMIT 100
 ```
 ----
-Creating external table referring to gcs path
+Creating external table referring to `GCS` path
 
 ```SQL
 CREATE OR REPLACE EXTERNAL TABLE `esoteric-code-377203.de_zoomcamp.external_yellow_tripdata`
@@ -91,10 +90,10 @@ OPTIONS (
   uris = ['gs://de_zoomcamp_week2/data/yellow/yellow_tripdata_2021-*.parquet']
 );
 ```
-Note: this table will be linked to the data in gcs
+Note: this table will be linked to the data in GCS
 
 ---
-Check external yellow trip data
+Check external `yellow trip data`
 ```SQL
 SELECT * FROM `esoteric-code-377203.de_zoomcamp.external_yellow_tripdata`
 LIMIT 10
@@ -103,25 +102,26 @@ LIMIT 10
 
 
 
-## 3.2 Partitioning And Clustering
+# **3.2 Partitioning And Clustering**
 
-### **Partition in BigQuery**
+## Partition in BigQuery
 
-A [partitioned table](https://cloud.google.com/bigquery/docs/partitioned-tables) is divided into segments, called partitions, that make it easier to manage and query your data. By dividing a large table into smaller partitions, you can improve query performance and control costs by reducing the number of bytes read by a query.
+A [`partitioned table`](https://cloud.google.com/bigquery/docs/partitioned-tables) is divided into segments, called `partitions`, that make it easier to manage and query your data. By dividing a large table into smaller partitions, you can improve query performance and control costs by reducing the number of bytes read by a query.
 
-![Alt text](images/partition_bq.png)
+<img src="images/partition_bq.png"  width="1100" height="700">
+
 
 Partition table can be partitioned by:
 
-- time-unit column
-- Ingestion time (_PARTITIONTIME)
-- Integer range partitioning
+- *time-unit column*
+- *Ingestion time* (_PARTITIONTIME)
+- *Integer range* partitioning
 
 Specifically for time unit and ingestion time, you can select Daily (default), hourly, monthly or yearly.
 
-As a remark, number of partitions limit is 4000 partition.
+As a remark, number of partitions limit is **4000** partition.
 
-### **BigQuery Partition Query**
+## BigQuery Partition Query
 
 Creating a non-partitioned table from external table
 ```SQL
@@ -138,15 +138,16 @@ SELECT * FROM `esoteric-code-377203.de_zoomcamp.external_yellow_tripdata`;
 ```
 
 ---
+
 **Impact of partition**
 
-Scanning 608 MB MB of data
+Scanning **608** MB MB of data
 ```SQL
 SELECT *
 FROM `esoteric-code-377203.de_zoomcamp.yellow_tripdata_non_partitioned`
 WHERE DATE(tpep_pickup_datetime) BETWEEN '2021-02-01' AND '2021-02-28';
 ```
-Scanning 178.55 MB of data
+Scanning **178.55** MB of data
 
 ```SQL
 SELECT *
@@ -164,32 +165,32 @@ ORDER BY total_rows DESC;
 ```
 ---
 
-### **Clustering in BigQuery**
+## Clustering in BigQuery
 
-[Clustered tables](https://cloud.google.com/bigquery/docs/clustered-tables) in BigQuery are tables that have a user-defined column sort order using *clustered columns*. Clustered tables can improve query performance and reduce query costs.
+[`Clustered tables`](https://cloud.google.com/bigquery/docs/clustered-tables) in BigQuery are tables that have a user-defined column sort order using `clustered columns`. Clustered tables can improve query performance and reduce query costs.
 
-In BigQuery, a *clustered column* is a user-defined table property that sorts [storage blocks](https://cloud.google.com/bigquery/docs/storage_overview#storage_layout) based on the values in the clustered columns. The storage blocks are adaptively sized based on the size of the table
+In BigQuery, a clustered column is a user-defined table property that sorts [`storage blocks`](https://cloud.google.com/bigquery/docs/storage_overview#storage_layout) based on the values in the clustered columns. The storage blocks are adaptively sized based on the size of the table
 
-You can specify up to four clustered columns and the order of the specified columns determines the sort order of the data.
+You can specify up to **four** clustered columns and the order of the specified columns determines the sort order of the data.
 
-![partition&clustering](images/bq_partition_and_clustering.png)
+<img src="images/bq_partition_and_clustering.png"  width="1100" height="600">
 
-From the picture above, we partition the table according to the `Date` and choose `tags` as the *clustered column*
+From the picture above, we partition the table according to the `Date` and choose `tags` as the clustered column
 
 Clustered column must be top-level, non-repeated columns and have this dtype:
 
-- DATA
-- BOOL
-- GEOGRAPHY
-- INT64
-- NUMERIC
-- BIGNUMERIC
-- STRING
-- TIMESTAMP
-- DATETIME
+- `DATA`
+- `BOOL`
+- `GEOGRAPHY`
+- `INT64`
+- `NUMERIC`
+- `BIGNUMERIC`
+- `STRING`
+- `TIMESTAMP`
+- `DATETIME`
 
 
-### **BigQuery Partition + Clustering Query**
+## BigQuery Partition + Clustering Query
 
 Creating a partition and cluster table
 ```SQL
@@ -198,13 +199,13 @@ PARTITION BY DATE(tpep_pickup_datetime)
 CLUSTER BY PULocationID AS
 SELECT * FROM `esoteric-code-377203.de_zoomcamp.external_yellow_tripdata`;
 ```
-Note: *Clustered column* cannot be a column with float dtype
+Note: *Clustered column* cannot be a column with `float` dtype
 
 ---
 
 **Impact of partition + clustering**
 
-Query scans 71.21 MB
+Query scans **71.21** MB
 
 ```SQL
 SELECT count(*) as trips
@@ -212,7 +213,7 @@ FROM `esoteric-code-377203.de_zoomcamp.yellow_tripdata_partitioned`
 WHERE DATE(tpep_pickup_datetime) BETWEEN '2021-01-01' AND '2021-12-31'
   AND PULocationID=1;
 ```
-Query scans 52.11 MB
+Query scans **52.11** MB
 
 ```SQL
 SELECT count(*) as trips
@@ -223,16 +224,16 @@ WHERE DATE(tpep_pickup_datetime) BETWEEN '2021-01-01' AND '2021-12-31'
 
 ---
 
-### **Partitioning vs Clustering**
+## Partitioning vs Clustering
 
 Need to be remembered, a table with data size < 1 GB doesn't show significant improvement with partitioning and clustering. On contrary, it will add significant cost since partitioning and clustering tables incur metadata reads and metadata maintenance.
 
 |       | Partitioning | Clustering |
 | ----------- | ----------- |----------- |
-| Cost | Cost known upfront  | Cost benefit unknown |
-| Granularity | Need partition-level management  | Need more granularity than partitioning alone allows |
-| Filter/Aggregation Queries | On a single column  | againts multiple particular columns |
-| Cardinality | Have a limitation of cardinality (4000)  | suitable for column or group of columns with large cardinality |
+| Cost | Cost known `upfront`  | Cost benefit `unknown` |
+| Granularity | Need `partition-level` management  | Need `more granularity` than partitioning alone allows |
+| Filter/Aggregation Queries | On a `single column`  | againts `multiple` particular columns |
+| Cardinality | Have a `limitation` of cardinality (4000)  | suitable for column or group of columns with `large cardinality` |
 
 **Clustering over Partitioning**
 
@@ -241,19 +242,19 @@ You need to consider to utilize clustering over partitioning, if:
 - Partitioning results in a large number of partitions beyond the limits on partitioned tables (High Cardinality)
 - Partitioning results in your mutation operations modifying the majority of partitions in the table frequently (e.g. update data/query every hour)
 
-## 3.3 BigQuery Best Practices
+# **3.3 BigQuery Best Practices**
 
-### **Cost Reduction**
+## Cost Reduction
 
 - Avoid ```SELECT *```, Specify the column(s) you need
 - Always price your queries before running them (can be seen on the right top corner)
 - Use clustered or partitioned tables
-- Use streaming inserts with caution
-- [Materialize](https://en.wikipedia.org/wiki/Materialized_view) query results in stages
+- Use streaming inserts with **caution**
+- [`Materialize`](https://en.wikipedia.org/wiki/Materialized_view) query results in stages
 
-### **Query Performance**
+## Query Performance
 - Filter on partitioned columns
-- [Denormalizing data](https://www.geeksforgeeks.org/denormalization-in-databases/), use nested or repeated columns
+- [`Denormalizing data`](https://www.geeksforgeeks.org/denormalization-in-databases/), use nested or repeated columns
 - Use external data sources appropriately, do not use it if you want a high query performance (will also add more cost)
 - Reduce data before using a `JOIN`
 - Avoid [oversharding](https://www.techtarget.com/searchoracle/definition/sharding) tables
@@ -262,3 +263,45 @@ You need to consider to utilize clustering over partitioning, if:
   - First, table with the largest number of rows
   - Followed by the table with the fewest rows
   - Then, place the remaining tables by decreasing size
+
+# 3.4 Internals of BigQuery
+
+## Internals
+
+![internals](images/Internals_of_bq.png)
+
+- `Dremel` : Query execution engine that powers BigQuery. It is a highly scalable system designed to execute queries on petabyte-scale datasets. Dremel uses a combination of *columnar data layouts* and a *tree architecture* to process incoming query requests
+
+- `Colossus` : Distributed file system used by Google for many of its products. In every Google data center, google runs a cluster of storage discs that offer storage capability for its various services.
+
+- `Jupiter Network` : bridge between the Colossus storage and the Dremel execution engine.
+
+## Record-Orientered vs Column-oriented
+
+A data store is basically a place for storing collections of data, such as a *database*, a *file system* or a *directory*. In a Database system they can be stored in two ways. These are as follows:
+
+1. Record-Oriented Data Stores
+2. Column-Oriented Data Stores
+
+<img src="images/Internals_of_bq2.png"  width="700" height="400">
+
+
+
+|       | Record-Oriented | Column-Oriented |
+| ----------- | ----------- |----------- |
+| Data storing and retrieving | One `row` at a time | in `columns` |
+| Read and write operations | `Easy` | `Slower` |
+| Best-suited | Online transaction systme | online analytical processing |
+| Performance of querying |  `Not efficient` in performing operations applicable to the entire datasetse | `Efficient` in performing operations applicable to the entire dataset` |
+| Compression | `Typical` compression mechanisms | Permits `high compression rates` |
+
+
+BigQuery stores table data in columnar format, meaning it stores each column separately. Column-oriented databases are particularly efficient at scanning individual columns over an entire dataset.
+
+
+## References
+
+- https://cloud.google.com/bigquery/docs/how-to
+- https://research.google/pubs/pub36632/
+- https://panoply.io/data-warehouse-guide/bigquery-architecture/
+- https://www.goldsborough.me/distributed-systems/2019/05/18//21-09-00-a_look_at_dremel/
