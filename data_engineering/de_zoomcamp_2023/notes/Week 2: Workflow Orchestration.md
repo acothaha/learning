@@ -2,6 +2,29 @@
 
 ### Table of Contents
 
+[**2.1 Data Lake (GCS)**](#21-data-lake-gcs)
+- [What is Data Lake?](#what-is-data-lake)
+- [Data Lake vs Data Warehouse](#data-lake-vs-data-warehouse)
+- [ETL vs ELT](#etl-vs-elt)
+- [Data Swamp - Data Lakes gone wrong](#data-swamp---data-lakes-gone-wrong)
+- [Data Lake Provider](#data-lake-provider)
+[**2.2 Introduction to Workflow Orchestration**](#22-introduction-to-workflow-orchestration)
+- [What is Workflow Orchestration](#what-is-workflow-orchestration)
+- [Workflow Process](#workflow-process)
+[**2.3 Introduction to Prefect**](#23-introduction-to-prefect)
+- [Core Concepts in Prefect](#core-concepts-in-prefect)
+- [Python Decorators](#python-decorators)
+- [Loading data into Postgres using Prefect](#loading-data-into-postgres-using-prefect)
+- [Parameterization and Subflows](#parameterization-and-subflows)
+- [Orion UI](#orion-ui)
+- [Blocks](#blocks)
+[**2.4 ETL with GCP & Prefect**](#24-etl-with-gcp--prefect)
+[**2.5 From Google Cloud Storage to Big Query**](#25-from-google-cloud-storage-to-big-query)
+[**2.6 Parametrizing Flow & Deployments**](#26-parametrizing-flow--deployments)
+- [Using Prefect CLI and UI for deployments](#using-prefect-cli-and-ui-for-deployments)
+[**2.7 Docker Storage with Infrastructure**](#27-docker-storage-with-infrastructure)
+- [Creating ETL Docker Image](#creating-etl-docker-image)
+
 # **2.1 Data Lake (GCS)**
 
 ## What is Data Lake?
@@ -410,7 +433,7 @@ python etl_web_to_gcs.py
 
 Then you can check the uploaded data in GCP
 
-# **2.4 From Google Cloud Storage to Big Query**
+# **2.5 From Google Cloud Storage to Big Query**
 
 In this part, we will implement an ETL script to extract data from `GCS` then transform and load it into `BigQuery` (The script is [etl_gcs_to_bq.py](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_2_workflow_orchestration/flows/02_gcp/etl_gcs_to_bq.py))
 
@@ -448,7 +471,7 @@ Now we can check whether the data has been updated or not by running this query.
 SELECT * FROM `[your_project].[your_dataset].yellow_taxi_trips` LIMIT 100
 ```
 
-# **2.5 Parametrizing Flow & Deployments**
+# **2.6 Parametrizing Flow & Deployments**
 
 ## Using Prefect CLI and UI for deployments
 
@@ -539,11 +562,11 @@ If it runs fine, you will see the flow is `Completed`
 ![deployment](images/deployment3.png)
 
 
-# **2.6 Docker Storage with Infrastructure**
+# **2.7 Docker Storage with Infrastructure**
 
 Now, we will try to leverage *Docker* to deploy our ETL flows
 
-## Creating a Docker Image
+## Creating ETL Docker Image
 
 First you need to login to your ***Docker Hub***. If you dont have a docker account, create one.
 
