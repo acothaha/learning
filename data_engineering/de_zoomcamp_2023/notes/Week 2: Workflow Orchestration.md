@@ -375,7 +375,7 @@ def ingest_data(table_name, df):
 
     print("Finished ingesting data into the postgres database")
 ```
-# **2.3 ETL with GCP & Prefect**
+# **2.4 ETL with GCP & Prefect**
 
 Let's start with writing an ETL script for saving data locally and uploading it to GCP (The script is [etl_web_to_gcs.py](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_2_workflow_orchestration/flows/02_gcp/etl_web_to_gcs.py))
 
@@ -503,8 +503,171 @@ But before we run the workflow, We must be familiar with the concept of `Core`, 
 
 - `Agent` : A piece of software that pulls tasks from the `Work Queue` and executes them.
 
+After knowing those concepts, we need to be familiar with the general timeline of how Prefect workflow is executed:
 
-    
+1. `Workflow Definition` : The first step is to define the workflow using the Prefect API. The workflow consists of a `directed acylic graph` (DAG) of tasks and the relationships between them.
+
+2. `Task Assignment` : Once the workflow is defined. `Prefect Core` assigns tasks to the `work queue`. This is done based on the relationships between the tasks and the state of each task.
+
+3. `Task Pulling`: `Agents` pull tasks from the `Work Queue` and execute them. When an `agent` pulls a task, it marks the task as "*running*" in the `Prefect Core`.
+
+4. `Task Execution` : The `agent` executes the task by running the code associated with it. The agent reports the result of the task execution back to the `Prefect Core`.
+
+5. `Task Completion` : If the task execution is successful, the `agent` marks the task as "*successful*" in the `Prefect Core`. If the task execution fauls, the `agent` marks the task as "*failed*"
+
+6. `Task Flow` : The result of each task execuation is used to determine the next task in the workflow. the `Prefect Core` updates the state of the tasks based on the results and assigns the next task to the `work queue`.
+
+7. `Repeat` : The process repeats until all tasks in the workflow are complete
+
+Now we are ready to run our deployment. We start with click on `Quick Run`:
+
+
+![deployment](images/deployment1.png)
+
+After we see a pop out saying that our flow is *scheduled to start now*, go to `Work Queues` and choose the **default** Work Queues:
+
+![deployment](images/deployment2.png)
+
+Now, we can start the agent using this command:
+
+```bash
+prefect agent start --work-queue "default"
+```
+
+If it runs fine, you will see the flow is `Completed`
+
+![deployment](images/deployment3.png)
+
+
+# **2.6 Docker Storage with Infrastructure**
+
+Now, we will try to leverage *Docker* to deploy our ETL flows
+
+## Creating a Docker Image
+
+First you need to login to your ***Docker Hub***. If you dont have a docker account, create one.
+
+Then, Create a *Dockerfile* to contain the ETL flow that you have created:
+
+```Dockerfile
+FROM prefecthq/prefect:2.7.7-python3.9
+
+COPY docker-requirements.txt . 
+
+# --trusted-host will tell docker to trust the site
+# --no-cache-dir avoiding bloating image with cached files
+RUN pip install -r docker-requirements.txt --trusted-host pypi.python.org --no-cache-dir
+
+COPY flows /opt/prefect/flows
+
+RUN mkdir -p /opt/prefect/data/yellow
+```
+
+Create the the image:
+
+```bash
+docker image build -t [YOUR_NAME]/prefect:zoom .
+```
+
+
+After you finish creating the image, you need to sign in to your Docker Hub:
+
+```bash
+docker login -u {username}
+```
+
+Now, it's the time to push your image to Docker Hub
+
+```bash
+docker image push [YOUR_NAME]/prefect:zoom
+```
+
+You can check whether the image has been pushed in your Docker Hub account
+
+![deployment](images/docker_deployment1.png)
+
+Moving on, now we will craete a `Docker Container` Block in Orion UI. Edit the below fields accordingly:
+- `Block Name`: zoom
+- `Type` (Optional) > The type of infrastructure: docker-container
+- `Image` (Optional) > Tag of a Docker image to use: [YOUR_NAME]/prefect:zoom
+- `ImagePullPolicy` (Optional): ALWAYS
+- `Auto Remove` (Optional): ON
+
+![deployment](images/docker_deployment2.png)
+
+Then click on `Create` button. After creating the block, we will create a python script to deploy our ETL flow in Docker `docker_deploy.py`
+
+```Python
+from prefect.deployments import Deployment
+from prefect.infrastructure.docker import DockerContainer
+from parameterized_flow import etl_parent_flow
+
+docker_block = DockerContainer.load("zoomcamp")
+
+docker_dep = Deployment.build_from_flow(
+    flow=etl_parent_flow,
+    name='docker-flow',
+    infrastructure=docker_block
+)
+
+if __name__ == '__main__':
+    docker_dep.apply()
+    print('Deployment Succeed')
+```
+
+After that, we can execute the script:
+
+```bash
+python docker_deploy.py
+```
+
+Check your Orion UI, to see if the deployment is there
+
+
+![deployment](images/docker_deployment3.png)
+
+Use this command to check which profile is currently being used. At the moment, since we haven't created any profile, it will point to **default**
+
+```bash
+prefect profile ls
+```
+
+ Next thing is we need to set the API URL for the Prefect CLI.
+
+```bash
+ prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+```
+The ***API URL*** is the endpoint for Prefect API, which is the interface for managing flows, tasks and runs. The API URL is set to http://127.0.0.1:4200/api, which means it is pointing to the *localhost* on port `4200`. This configuration is used by the Prefect CLO to communicate with the Prefect API when you run commands such as prefect flow run or prefect flow get.
+
+If the `Prefect_API_URL` is not set, then Prefect will default to the ***cloud API*** endpoint which is https://api.prefect.io/v1/. If you are running Prefect locally, you need to set `Prefect_API_URL` to the local API endpoint to ensure that the Prefect client communicates with your local instance of Prefect server. In our context, it allows our docker container to interface with the orion server.
+
+Start an `agent` with this command
+
+```bash
+prefect agent start -q default
+```
+
+And run the docker flow we have created from CLI by running
+
+```
+prefect deployment run etl-parent-flow/docker-flow
+```
+
+This should complete the workflow as you can see below and load the data into GCS
+
+
+![deployment](images/docker_deployment4.png)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
