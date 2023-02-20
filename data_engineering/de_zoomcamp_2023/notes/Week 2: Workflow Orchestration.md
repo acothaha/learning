@@ -8,9 +8,11 @@
 - [ETL vs ELT](#etl-vs-elt)
 - [Data Swamp - Data Lakes gone wrong](#data-swamp---data-lakes-gone-wrong)
 - [Data Lake Provider](#data-lake-provider)
+
 [**2.2 Introduction to Workflow Orchestration**](#22-introduction-to-workflow-orchestration)
 - [What is Workflow Orchestration](#what-is-workflow-orchestration)
 - [Workflow Process](#workflow-process)
+
 [**2.3 Introduction to Prefect**](#23-introduction-to-prefect)
 - [Core Concepts in Prefect](#core-concepts-in-prefect)
 - [Python Decorators](#python-decorators)
@@ -18,10 +20,14 @@
 - [Parameterization and Subflows](#parameterization-and-subflows)
 - [Orion UI](#orion-ui)
 - [Blocks](#blocks)
+
 [**2.4 ETL with GCP & Prefect**](#24-etl-with-gcp--prefect)
+
 [**2.5 From Google Cloud Storage to Big Query**](#25-from-google-cloud-storage-to-big-query)
+
 [**2.6 Parametrizing Flow & Deployments**](#26-parametrizing-flow--deployments)
 - [Using Prefect CLI and UI for deployments](#using-prefect-cli-and-ui-for-deployments)
+
 [**2.7 Docker Storage with Infrastructure**](#27-docker-storage-with-infrastructure)
 - [Creating ETL Docker Image](#creating-etl-docker-image)
 
