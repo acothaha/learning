@@ -21,7 +21,10 @@
 * [Cost Reduction](#cost-reduction)
 * [Query Performance](#query-performance)
 
-
+[**3.4 Internals of BigQuery**](#34-internals-of-bigquery)
+- [Internals](#internals)
+- [Record-Orientered vs Column-oriented](#record-orientered-vs-column-oriented)
+- [References](#references)
 
 
 # **3.1 Data Warehouse And BigQuery**
@@ -264,7 +267,7 @@ You need to consider to utilize clustering over partitioning, if:
   - Followed by the table with the fewest rows
   - Then, place the remaining tables by decreasing size
 
-# 3.4 Internals of BigQuery
+# **3.4 Internals of BigQuery**
 
 ## Internals
 
@@ -305,3 +308,5 @@ BigQuery stores table data in columnar format, meaning it stores each column sep
 - https://research.google/pubs/pub36632/
 - https://panoply.io/data-warehouse-guide/bigquery-architecture/
 - https://www.goldsborough.me/distributed-systems/2019/05/18//21-09-00-a_look_at_dremel/
+
+

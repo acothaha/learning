@@ -1,0 +1,69 @@
+###
+### A complete description of a Prefect Deployment for flow 'etl-web-to-gcs-parent-flow'
+###
+name: Week-3-Homework-ETL
+description: null
+version: fcba635bccee33c49b39008ad7c2e186
+# The work queue that will handle this deployment's runs
+work_queue_name: default
+tags: []
+parameters: {}
+schedule: null
+infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: etl-web-to-gcs-parent-flow
+manifest_path: null
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  _block_document_id: add76e8c-aecb-44c8-a456-0390c19bff9b
+  _block_document_name: anonymous-fb63a679-48de-449f-a6f2-86d6e40cac18
+  _is_anonymous: true
+  block_type_slug: process
+  _block_type_slug: process
+storage: null
+path: /home/aco/Learning/data_engineering/de_zoomcamp_2023/week_3_data_warehouse/homework
+entrypoint: week_3_ingestion_data.py:etl_web_to_gcs_parent_flow
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    months:
+      title: months
+      default:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      position: 0
+      type: array
+      items:
+        type: integer
+    year:
+      title: year
+      default: 2019
+      position: 1
+      type: integer
+    color:
+      title: color
+      default: fhv
+      position: 2
+      type: string
+  required: null
+  definitions: null

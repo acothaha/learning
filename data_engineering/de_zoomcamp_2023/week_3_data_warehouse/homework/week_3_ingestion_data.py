@@ -17,12 +17,10 @@ def fetch(dataset_url: str) -> pd.DataFrame:
 def clean(color: str, df = pd.DataFrame) -> pd.DataFrame:
     """Fix dtype issues"""
 
-    if color == 'yellow':
-        df['tpep_dropoff_datetime'] = pd.to_datetime(df['tpep_dropoff_datetime'])
-        df['tpep_pickup_datetime'] = pd.to_datetime(df['tpep_pickup_datetime'])
-    elif color == 'green':
-        df['lpep_dropoff_datetime'] = pd.to_datetime(df['lpep_dropoff_datetime'])
-        df['lpep_pickup_datetime'] = pd.to_datetime(df['lpep_pickup_datetime'])
+    df['dropOff_datetime'] = pd.to_datetime(df['dropOff_datetime'])
+    df['pickup_datetime'] = pd.to_datetime(df['pickup_datetime'])
+    df['PUlocationID'] = df['PUlocationID'].astype('Int64')
+    df['DOlocationID'] = df['DOlocationID'].astype('Int64')
     
     print(df.shape[0])
     print(f'columns: {df.dtypes}')
@@ -64,9 +62,9 @@ def etl_web_to_gcs(month: int, year: int, color: str) -> None:
 @flow()
 def etl_web_to_gcs_parent_flow(
     months: list[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    year: int = 2020,
-    color: str = 'green'
-):  
+    year: int = 2019,
+    color: str = 'fhv'
+):
         for month in months:
             etl_web_to_gcs(month, year, color)
 
