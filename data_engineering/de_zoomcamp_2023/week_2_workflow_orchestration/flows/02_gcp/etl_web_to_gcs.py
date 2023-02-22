@@ -1,5 +1,6 @@
 from pathlib import Path 
 import pandas as pd 
+import numpy as np
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
 from random import randint
@@ -18,11 +19,22 @@ def clean(color: str, df = pd.DataFrame) -> pd.DataFrame:
     """Fix dtype issues"""
 
     if color == 'yellow':
+        df.fillna(np.nan)
         df['tpep_dropoff_datetime'] = pd.to_datetime(df['tpep_dropoff_datetime'])
         df['tpep_pickup_datetime'] = pd.to_datetime(df['tpep_pickup_datetime'])
+        
+        trans_dtype = ['Int64', 'datetime64[ns]', 'datetime64[ns]', 'Int64', 'float64', 'Int64','object','Int64','Int64','Int64','float64','float64','float64','float64','float64','float64','float64','float64',]
+        
+        for column, dt in zip(df.columns, trans_dtype):
+            df[column] = df[column].astype(dt)
     elif color == 'green':
         df['lpep_dropoff_datetime'] = pd.to_datetime(df['lpep_dropoff_datetime'])
         df['lpep_pickup_datetime'] = pd.to_datetime(df['lpep_pickup_datetime'])
+        
+        trans_dtype = ['Int64', 'datetime64[ns]', 'datetime64[ns]', 'object', 'Int64', 'Int64', 'Int64', 'Int64', 'float64', 'float64', 'float64', 'float64', 'float64', 'float64', 'float64', 'float64', 'float64', 'Int64', 'Int64',  'float64']
+        
+        for column, dt in zip(df.columns, trans_dtype):
+            df[column] = df[column].astype(dt)
     
     print(df.shape[0])
     print(f'columns: {df.dtypes}')
@@ -67,8 +79,8 @@ def etl_web_to_gcs_parent_flow(
     year: int = 2020,
     color: str = 'green'
 ):  
-        for month in months:
-            etl_web_to_gcs(month, year, color)
+    for month in months:
+        etl_web_to_gcs(month, year, color)
 
 if __name__ == "__main__":
     etl_web_to_gcs_parent_flow()
