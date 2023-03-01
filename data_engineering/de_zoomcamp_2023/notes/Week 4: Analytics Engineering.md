@@ -151,13 +151,13 @@ A ***model*** is a .sql with a `SELECT` statement; no DDL or DML is used. dbt wi
 
 ## How to use dbt
 
-dbt has 2 main components: *dbt core* and *dbt cloud*
+dbt has 2 main components: *dbt Core* and *dbt Cloud*
 
 - ***dbt Core***: open-source project that allows the data transformation
 
     - Builds and runs a dbt project (.sql and .yaml files)
 
-    - Includes SQLQ compilation magic, macros and database adapters
+    - Includes SQL compilation magic, macros and database adapters
     - Includes a CLI interface to run dbt commands locally
     - open-source and free to use
 
@@ -167,12 +167,10 @@ dbt has 2 main components: *dbt core* and *dbt cloud*
 
     - Jobs orchestration
     - Logging and alerting
-    - INtergrated documentation
+    - Intergrated documentation
     - Free for individuals (one developer set)
 
-For integration with BigQuery, we will use the dbt Cloud IDE, so a local installation of dbt Core is not required. For developing locally rather than using the Cloud IDE, dbt Core is required. Using dbt with a local Posgres adtabase can be done with dbt Core, which can be installed locally and connected to Postgresand run models through CLI.
-
-
+For integration with BigQuery, we will use the dbt Cloud IDE, so a local installation of dbt Core is not required. For developing locally rather than using the Cloud IDE, dbt Core is required. Using dbt with a local Postgres database can be done with dbt Core, which can be installed locally and connected to Postgres and run models through CLI.
 
 <img style="margin-bottom: 40px" src="images/dbtbq.png"  width="900" height=auto >
 
@@ -186,7 +184,7 @@ In order to utilize dbt Cloud, we will need to create an user account. we are go
 
 During the signup process, we will be asked to create a starter project and connect to a database. We will connect dbt to BiqQuery using [BigQuery OAuth](https://docs.getdbt.com/docs/collaborate/manage-access/set-up-bigquery-oauth). More detailed instructions on how to generate the credentials and connect both services can be found in this [link](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_4_analytics_engineering/dbt_cloud_setup.md). When asked, we connect the project to our *development* dataset.
 
-Make sure we have set up a GitHub repo before hand. We will add repository into dbt with cloning our GitHub repo by copying the SSH key from our repo. Then, we need a deploy key, head to our GitHub repo and go to the settings tab. Under security we will find the menu *deploy keys*. Click on *Add key* and paste the deploy key provided by dbt cloud. Make sure to tick on *Allow write access*.
+Make sure we have set up a GitHub repo beforehand. We will add repository into dbt with cloning our GitHub repo by copying the SSH key from our repo. Then, we need a deploy key, head to our GitHub repo and go to the settings tab. Under security we will find the menu *deploy keys*. Click on *Add key* and paste the deploy key provided by dbt cloud. Make sure to tick on *Allow write access*.
 
 In the IDE windows, press the green *initialize* button to create the project files. Inside `dbt_project.yml`, change the project name both in the `name` field as well as right below the `models` block. We may comment or delete the `example` block at the end.
 
@@ -218,7 +216,7 @@ WHERE record_state = 'ACTIVE'
 
     - More info about Jinja macros for dbt in this [link](https://docs.getdbt.com/docs/build/jinja-macros)
 
-- We commonly use the `config()` function at the beginningof a model to define a [***materialization***](https://docs.getdbt.com/docs/build/materializations) ***strategy***: a strategy for persisting dbt models in warehouse.
+- We commonly use the `config()` function at the beginning of a model to define a [***materialization***](https://docs.getdbt.com/docs/build/materializations) ***strategy***: a strategy for persisting dbt models in warehouse.
     - `table`   : The model will be built as a table on each run.
 
     - `view`    : Would rebuild the model on each run as a SQL view.
@@ -237,19 +235,19 @@ CREATE TABLE my_schema.my_model AS (
 
 After the code is compiled, dbt will run the compiled code in the Data Warehouse.
 
-Additional model properties are stored in YAML files. Traditionally, these files were named `schema.yml` but later version of dbt do not enfore this as it could lead to confusion.
+Additional model properties are stored in YAML files. Traditionally, these files were named `schema.yml` but later version of dbt do not enforce this as it could lead to confusion.
 
 ## The FROM clause
 
-The `FROM` cluase within `SELECT`statement defines the *sources* of data to be used
+The `FROM` clause within `SELECT` statement defines the *sources* of data to be used
 
 The following sources are available to dbt models:
 
 - ***Sources*** : The data loaded within our Data Warehouse.
 
-    - We can access this data with the *source()* function
+    - We can access this data with the `source()` function
     
-    - The ***sources*** key in our YAML file contains the defaults of the databases that the ***source()*** function can access and translate into proper SQL-valid names
+    - The ***sources*** key in our YAML file contains the defaults of the databases that the `source()` function can access and translate into proper SQL-valid names
         - Additionally, we can define *source freshness* to each source that we can check whether a source is "fresh" or "stale", which can be useful to check whether our data pipelines are working properly
         
     - More info about sources in this [link](https://docs.getdbt.com/docs/build/sources)
@@ -262,11 +260,11 @@ The following sources are available to dbt models:
         1. Add a CSV file to your `seeds` folder.
         
         2. Run the [`dbt seed`](https://docs.getdbt.com/reference/commands/seed) command to create a table in our Data Warehouse
-            - If you update the contect of a seed, running `dbt seed` will append the updated values to the table rather than subtituting them. Instead, run `dbt seed --full-refresh` and the old table will be dropped then a new one will be created.
+            - If you update the content of a seed, running `dbt seed` will append the updated values to the table rather than subtituting them. Instead, run `dbt seed --full-refresh` and the old table will be dropped then a new one will be created.
 
         3. Refer to the seed in your model with `ref()` function.
 
-    - Moreunfo about seed in this [link](https://docs.getdbt.com/docs/build/seeds) 
+    - More info about seed in this [link](https://docs.getdbt.com/docs/build/seeds) 
 
 Here's an example of how you would declare a source in a `.yml` file:
 
@@ -303,7 +301,7 @@ SELECT
 FROM {{ ref(`taxi_zone_lookup`) }}
 ```
 
-The `ref()` function references underlying tables and views in the Data Warehouse. When compiled, it will build the dependencies and resolve the correct schema for us. So, if Bigquery contains a schema/dataset called `dbt_dev` inside the `my_project` database which we are using for development and it contains a table called `stg_green_tripdata`, then the following code  ...
+The `ref()` function references underlying tables and views in the Data Warehouse. When compiled, it will build the dependencies and resolve the correct schema for us. So, if BigQuery contains a schema/dataset called `dbt_dev` inside the `my_project` database which we are using for development and it contains a table called `stg_green_tripdata`, then the following code  ...
 
 ```SQL
 WITH green_data AS (
@@ -328,12 +326,11 @@ WITH green_data AS (
 
 ## Defining a sourca and creating a model
 
-We will now create our first model. We are going to begin by creating 2 folders ynder our `models` folder:
+We will now create our first model. We are going to begin by creating 2 folders under our `models` folder:
 
 - `staging` -> Contain the raw model
 
-- `core` -> Contain the models that we will exposes at the end to the BI 
-tools, stakeholders, etc.
+- `core` -> Contain the models that we will expose at the end to the BI tools, stakeholders, etc.
 
 Under `staging` we will add 2 new files: `schema.yml` and `stg_green_tripdata.sql`
 
@@ -369,11 +366,11 @@ SELECT * FROM {{ source('staging', 'green_tripdata') }}
 
 The advantage of having the properties in a seperate file is that we can easily modify the `schema.yml` file to change the database details and write to different databases without having to modify our `stg_green_tripdata.sql` file.
 
-You may now run the model with the `dbt run` command, either locally or from dbt cloud.
+You may now run the model with the `dbt run` command, either locally or from dbt Cloud.
 
 ## Macros
 
-***Macros*** are pieces if code in Jinja that can be reused, similar to functions in other languages.
+***Macros*** are pieces of code in Jinja that can be reused, similar to functions in other languages.
 
 dbt already includes a series of macros like `config()`, `source()` and `ref()`, but custom macros can also be defined.
 
@@ -390,7 +387,7 @@ There are 3 kinds of Jinja *delimiters*:
 
 - `{% ... %}` for ***statements*** (control block, macro definitions)
 
-- `{{ ... }}` for ***expression*** (literals, math, comparission, logic, macro calls...)
+- `{{ ... }}` for ***expression*** (literals, math, comparison, logic, macro calls...)
 - `{# ... #}` for comments
 
 Here's a macro definition example:
@@ -446,7 +443,7 @@ from {{ source('staging','green_tripdata') }}
 where vendorid is not null
 ```
 
-- The macro is replaced by the code contained within the macro definition as well as ant variables that we may have passed to the macro parameters.
+- The macro is replaced by the code contained within the macro definition as well as any variables that we may have passed to the macro parameters.
 
 ## Packages
 Macros can be exported to ***packages***, similarly to how classes and functions can be exported to libraries in other languages. Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
@@ -505,7 +502,7 @@ Variables can be used with the `var()` macro, for instance:
 
 The models we've created in the *staging area* are for normalizing the fields of both green and yellow taxis. With normalized field names we can now join the 2 together in more complex ways.
 
-the `ref()` marci us ysed fir referencing any underlying tables and views that we've created, so we can reference seeds as well as models using this macro:
+the `ref()` macro is used for referencing any underlying tables and views that we've created, so we can reference seeds as well as models using this macro:
 
 ```SQL
 {{ config(materialized='table') }}
@@ -517,7 +514,7 @@ select
     replace(service_zone, 'Boro', 'Green') as service_zone
 from {{ ref('taxi_zone_lookup') }}
 ```
-- This model reference the `taxi_zone_lookup` table craeted from the taxi zone lookup CSV seed.
+- This model reference the `taxi_zone_lookup` table created from the taxi zone lookup CSV seed.
 ```SQL
 with green_data AS (
     SELECT *,
@@ -550,7 +547,7 @@ Tests are defined on a column in the model YAML files (like the `schema.yml` fil
 - `accepted_values`
 - `relationships`
 
-Other that those above, custom tests can also be created as queries. Here is an example of test:
+Other than those above, custom tests can also be created as queries. Here is an example of test:
 
 ```yml
 - name: stg_yellow_tripdata
@@ -582,13 +579,13 @@ Other that those above, custom tests can also be created as queries. Here is an 
             
 ```
 - The tests are defined for a column in a specific table for a specific model
-- The are 2 tests in this YAML file: `unique` and `not_null`. Both are predefined by dbt.
+- There are 2 tests in this YAML file: `unique` and `not_null`. Both are predefined by dbt.
 
 - `unique` checks whether all the values in the `tripid` column are unique
 - `not_null` checks whether all the values in the `tripid` column are not null
 - Both tests will return a warning in the command line interface if they detect an error
 
-Here's what the not_null will compile to in SQL query form:
+Here's what the `not_null` will compile to in SQL query form:
 
 ```SQL
 select *
@@ -610,7 +607,7 @@ dbt build  # Run the seeds, run the tests and run the models.
 
 dbt also provides a way to generate documentation for your dbt project and render it as a website.
 
-You may have noticed in the previous code block that a `description:` can be added to the YAML field. dbt will make use of these fields to gather info.
+You may have noticed in the previous code block that a `description:` can be added to the YAML file. dbt will make use of these fields to gather info.
 
 the dbt generated docs will include the following:
 
@@ -658,12 +655,12 @@ dbt projects are usually deployed in the form of ***jobs***:
 - Jobs can be triggered manually or on schedule.
     - dbt Cloud has a scheduler which can run jobs for us, but other tools such as Airflow or cron can be used as well
 - Each job will keep a log of the runs over time, and each run will keep the logs of each command.
-- A job may alosi be used to generate documentation, which may be viewed under the run information.
+- A job may also be used to generate documentation, which may be viewed under the run information.
 - If the `dbt source freshness` command was run, the results can also be viewed at the end of the job.
 
 ## Continuous Integration
 
-Another good software engineering practice that dbt enables is ***Continoues Integration*** (CI): The practice that regularly merging development branches into a central repository, after which automated builds and tests are run. The goal of CI is to reduce adding bugs to the productino code and maintain a more stable project.
+Another good software engineering practice that dbt enables is ***Continoues Integration*** (CI): The practice that regularly merging development branches into a central repository, after which automated builds and tests are run. The goal of CI is to reduce adding bugs to the production code and maintain a more stable project.
 
 CI is built on jobs: a CI job will do things such as build, test, etc. We can define CI jobs which can then be triggered under certain circumtances to enable CI.
 
@@ -673,7 +670,7 @@ CI jobs can also be scheduled with the dbt Cloud scheduler, Airflow, cron and a 
 
 ## Deployment using dbt Cloud
 
-IN dbt Cloud, you might have noticed that after the first commit, the `main` branch becomes read-only and forces us to create a new branch if we want to keep developing. dbt Cloud does this to enforce us to open PRs for CI purposes rather than allowing merging to `main` straight away.
+In dbt Cloud, you might have noticed that after the first commit, the `main` branch becomes read-only and forces us to create a new branch if we want to keep developing. dbt Cloud does this to enforce us to open PRs for CI purposes rather than allowing merging to `main` straight away.
 
 In order to properly establish a deployment workflow, we must define ***environments*** within dbt Cloud. 
 - Go to *Environment* (*Deploy* > *Environment*)  and click on *Create Environment* button
