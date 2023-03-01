@@ -9,6 +9,7 @@
 
 [**4.2 Introduction to dbt**](#42-introduction-to-dbt)
 - [What is dbt?](#what-is-dbt)
+- [How does dbt work?](#How-does-dbt-work?)
 - [How to use dbt](#how-to-use-dbt)
 
 [**4.3 Setting up dbt**](#43-setting-up-dbt)
@@ -65,11 +66,11 @@ The introduction of all of these tools changed the way the data teams work as we
 - ***Data Analyst***: Utilize data to answer questions and solve problems
 - ***Data Scientist***: Predicts the future based on past patterns and covers the what-ifs rather than what the day-to-day
 
-However, with the introduction of these tools, both data scientist and analysts find themself writing code even thought they are not software engineers and writing code isn't their top priority. Data engineers are good software engineers but they don't possessthe training on how the data is going to be used by the business users.
+However, with the introduction of these tools, both data scientists and analysts find themself writing code even thought they are not software engineers and writing code isn't their top priority. Data engineers are good software engineers but they don't possess the training on how the data is going to be used by the business users.
 
 <img src="images/analytics_engineering.png"  width="900" height="500">
 
-***Analytics Engineer*** is the role that tries to fill the gap: it introduces the food software engineering practices to the effort of data scientists and analysts. The analytics engineer may be exposed to the following tools:
+***Analytics Engineer*** is the role that tries to fill the gap; it introduces the good software engineering practices to the effort of data scientists and analysts. The analytics engineer may be exposed to the following tools:
 
 1. Data loading (Kafka, Nifi, etc)
 
@@ -93,9 +94,9 @@ Ralph Kimball's Dimensional Modeling is an approach to Data Warehouse design whi
 
 1. Deliver data which is *understandable* to the business users.
 
-2. Deliver *fast* quest performance.
+2. Deliver *fast* query performance.
 
-Other goals such as reducing redundant data (prioritized by other approaches such as [3NF](https://www.wikiwand.com/en/Third_normal_form#:~:text=Third%20normal%20form%20(3NF)%20is,integrity%2C%20and%20simplify%20data%20management.) by Bill Inmon) are secondary to these goals. Dimensional Modeling alsi differs from other approaches to Data Warehouse design such as [Data Vaults](https://www.wikiwand.com/en/Data_vault_modeling)
+Other goals such as reducing redundant data (prioritized by other approaches such as [3NF](https://www.wikiwand.com/en/Third_normal_form#:~:text=Third%20normal%20form%20(3NF)%20is,integrity%2C%20and%20simplify%20data%20management.) by Bill Inmon) are secondary to these goals. Dimensional Modeling also differs from other approaches to Data Warehouse design such as [Data Vaults](https://www.wikiwand.com/en/Data_vault_modeling)
 
 Dimensional Modeling is based around 2 important concepts:
 - ***Face Table***
@@ -118,7 +119,7 @@ Dimensional Modeling is based around 2 important concepts:
     - Can be considered as "**nouns**"
 - Dimensional Modeling is built on [***star schema***](https://www.wikiwand.com/en/Star_schema) with fact tables surrounded by dimensions tables.
 
-A good way to understand the *architecture* oof Dimensional Modeling is by drawing an analogy between dimensional modeling and a restaurant:
+A good way to understand the *architecture* of Dimensional Modeling is by drawing an analogy between dimensional modeling and a restaurant:
 
 - *Stage area* -> Food storage area
 
@@ -137,7 +138,16 @@ A good way to understand the *architecture* oof Dimensional Modeling is by drawi
 
 dbt also allows us to introduce good software engineering practices by defining a *deployment workflow*:
 
-A ***model*** us a .sql file with `SELECT` statement; No DDL or DML is used. dbt will compile the file and run it in our database
+1. Develop models
+2. Test and document models
+3. Deploy models with *version control* and *CI/CD*
+
+## How does dbt work?
+
+dbt works by defining a ***modeling layer*** that sits on top of our Data Warehouse. The modeling layer will turn *tables* into ***models*** which will then transform into *, which can be then stored into the Data Warehouse for persistence.
+
+A ***model*** is a .sql with a `SELECT` statement; no DDL or DML is used. dbt will compile the file and run it in our Data Warehouse.
+
 
 ## How to use dbt
 
