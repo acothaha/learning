@@ -217,3 +217,130 @@ Make sure that the version under `$SPARK_HOME/python/lib/` matches the filename 
 Press `Ctrl+O` to save the file and `Ctrl+X` to exit.
 
 Then, run this command: `source ~/.bashrc.`
+
+# **5.4 First look at Spark/PySpark**
+
+## Creating a Spark Session
+
+WE can use Spark with Python code by means of PySpark. We will be using Jupyter Notebooks for this session.
+
+We first need to import PySpark to our code:
+
+```python
+import pyspark
+from pyspark.sql import SparkSession
+```
+
+Now, we need to intantiate a ***Spark Session***, an object that we use to interact with Spark.
+
+```python
+spark = SparkSession.builder \
+        .master("local[*]") \
+        .appName('test') \
+        .getOrCreate()
+```
+
+- `SparkSession` is the class of the object that we instantiate. `builder` is the builder method.
+- `master()` setes the Spark *master URL* to connect to. The `local` string means that Spark will run on a local cluster. `[*]` means that Spark will run with as many CPU cores as possible.
+- `appName` defines the name of the application/session. This will be shown in the Spark UI.
+- `getOrCreate` will create the session or recover the object if it was previously created.
+
+Once we've instantiated a session, we can access the Spark UI by browsing to `localhost:4040`. The UI will display all current jobs. Since we've just created the instance, there should be no jobs currently running.
+
+## Reading CSV files
+
+Similarly to Pandas, Spark can read CSV files into ***dataframes***, a tabular data structure. Unlike Pandas, Spark can handle much bigger datasets but it's unable to infer the datatypes of each columns.
+
+> Note: Spark dataframes use custom data types; we cannot use regular Python data types.
+
+For this example, we will use the [High Volume For-Hire Vehicle Trip Records for January 2021](https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhvhv/fhvhv_tripdata_2021-01.csv.gz) available from the [NYC TLC Trip Record Data website](https://github.com/DataTalksClub/nyc-tlc-data/releases/tag/fhvhv). The file should be about 124MB in size.
+
+To download the file run this commands
+
+```bash
+# Download the file
+> wget "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhvhv/fhvhv_tripdata_2021-01.csv.gz"
+
+# unzip the file
+> gzip -d "fhvhv_tripdata_2021-01.csv.gz"
+
+# Check number of lines in the CSV
+> wc -l "fhvhv_tripdata_2021-01.csv"
+11908469 fhvhv_tripdata_2021-01.csv
+```
+
+
+Let's read the file and create a dataframe:
+
+```python
+df = spark.read \
+    .option("header", "true") \
+    .csv('fhvhv_tripdata_2021-01.csv')
+```
+
+- `read()` reads the file.
+- `option()` contains options for the `read()` method. In this case, we're specifying that the first line of the CSV file contains the columns names.
+- `csv()` is for reading CSV files.
+
+you can see the contents of the dataframe with `df.show()` or `df.head()`. You can also check the current schema with `df.schema()` or `df.printSchema()`; you will notice that all values are strings.
+
+We can use a trick with Pandas to infer the datatypes:
+1. Create a smaller CSV file with the first 1000 records or so.
+2. Import Pandas and create a Pandas dataframe. This dataframe will have inferred datatypes.
+3. Create a Spark dataframe from the Pandas dataframe and check its schema.
+
+    ```python
+    spark.createDataFrame(my_pandas_datafram).schema
+    ```
+
+4. Based on the output of the previous method, import `types` from `pyspark.sql` and create `StructType` containing a list of the datatypes.
+
+    ```python
+    from pyspark.sql import types
+    schema = types.Structype([...])
+    ```
+    - `types` contains all of the available data types for Spark dataframes.
+
+5. Create a new Spark dataframe and include the schema as an option.
+    ```python
+    df = spark.read \
+        .option("header", "true") \
+        .schema(schema) \
+        .csv('fhvhv_tripdata_2021-01.csv')
+    ```
+
+You may find an example of Jupyter Notebook file using this trick [here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_5_batch_processing/notebooks/04_pyspark.ipynb)
+
+## Partitions
+
+A ***Spark cluster*** is composed of multiple ***executors***. Each executor can process data independently in order to parallelize and speed up work.
+
+In the previous example we read a single large CSV file. A file can only be read by a single executor, which means that the code we've written so far isn't parallelized and thus will only be run by a single executor rather than many at the same time.
+
+In order to solve this issue, we can *split a file into multiple parts* so that each executor can take care of the part and have all executors working simultaneously. These splits are called partitions.
+
+We will now read the CSV file, partition the dataframe and parquetize it. This will create multiple files in parquet format.
+
+> converting to parquet is an **expensive** operation which may take several minutes.
+
+```python
+# Create 24 partitions in our dataframe
+df = df.repartition(24)
+# parquetize and write to fhvhv/2021/01/ folder
+df.write.parquet('fhvhv/2021/01/')
+```
+
+We may check the Spark UI at any time and see the progress of the current job, which is divided into stage which contains tasks. The tasks in a stage will not start until all task on the previous stage are finished.
+
+When creating a dataframe, Spark creates as many partitions as CPU cores available by default, and each partition creates a task. Hence, assuming that the dataframe was initially partitioned into 6 partitions, the `write.parquet()` method will have 2 stages: the first with 6 tasks and the second one with 24 tasks.
+
+Besides the 24 parquet files, you should also see a `_SUCCESS` file which should be empty. This file is created when the job is finished successfully.
+
+Trying to write the files again will output an error because Spark will not write to a non-empty folder. You can force an overwrite with the `mode` argument:
+
+```python
+df.write.parquet('fhvhv/2021/01/', mode='overwrite')
+```
+
+The opposite of partitioning (joining multiple partitions into a single partition) is called ***coalescing***.
+
