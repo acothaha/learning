@@ -344,3 +344,304 @@ df.write.parquet('fhvhv/2021/01/', mode='overwrite')
 
 The opposite of partitioning (joining multiple partitions into a single partition) is called ***coalescing***.
 
+## Spark dataframes
+
+We can create a dataframe from the parquet files we create in the previous section.
+
+```python
+df = spark.read.parquet('fhvhv/2021/01/')
+```
+
+Unlike CSV files, parquet files contain the schema of the dataset, so there is no need to specify a schema like we previously did when reading the CSV files. you can check the schema like this:
+
+```python
+df.printschema()
+```
+
+(One of the reasons why parquet files are relatively smaller than CSV files is because they store the data according to the datatypes, so integer values will take less space than long or string values)
+
+There are many Pandas-like operations that we can do on spark dataframe, such as:
+
+- Column selection - returns a dataframe with only the selected columns
+
+    ```python
+    new_df = df.select('pickup_datetime', 'dropoff_datetime', 'PULocationID', 'DOLocationID')
+    ```
+
+ - Filtering by values - return a dataframe whose records match the condition stated in the filter
+
+    ```python
+    new_df = df.select('pickup_datetime', 'dropoff_datetime', 'PULocationID', 'DOLocationID').filter(df['hvfhs_license_num'] == 'HV0003')
+
+- And many more. The official Spark documentation website contains a quick guide for dataframes ([here](https://spark.apache.org/docs/latest/api/python/getting_started/quickstart_df.html))
+
+## Actions vs Transformations
+
+Some Spark methods are "**Lazy**", meaning that they are not executed right away. We can test this with the last instructions we run in the previous section: after running them, the Spark UI will not show any new jobs. On the other hand, running `df.show()` will be executed right away and display the contents of the dataframe; the Spark UI will also show a new job.
+
+These lazy commands are called ***transformations*** and the eager commands are called ***actions***. Computations only happen when actions are triggered.
+
+```python
+df.select(...).filter(...).show()
+```
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark9.png"  width="" height="">
+
+Both `select()` and `filter()` are ***transformations***, but `show()` is an ***action***. The whole instructions gets evaluated only when the `show()` action is triggered.
+
+list of ***transformations*** (lazy):
+
+- Selecting columns
+- Filtering
+- Joins
+- Group by
+- Partitiions
+- ...
+
+List of ***actions*** (eager):
+- Show, take, head
+- Write, read
+- ...
+
+## Functions and User Defined Functins (UDFs)
+ 
+Besides the SQL and Pandas-like commands we've discussed so far, Spark provides additional built-in functions that allow for more complex data manipulation. By convention, these functions are imported as follows:
+
+```python
+from pyspark.sql import functions as F 
+```
+
+Here is an example of built-in function usage:
+
+```python
+df \
+    .withColumn('pickup_date', F.to_date(df.pickup_datetime)) \
+    .withColumn('dropoff_date', F.to_date(df.dropoff_datetime)) \
+    .select('pickup_date', 'dropoff_date', 'PULocationID', 'DOLocationID') \
+    .show()
+```
+- `withColumn()` is a ***transformation*** that adds a new column to the dataframe.
+
+    > ***IMPORTANT***: adding a new column with the same name as a previously existing column will overwrite the existing column!
+-  `select()` is another ***transformation*** that select the stated columns.
+- `F.to_date()` is a built-in Spark function that converts a timestamp to date format (year, month and day only, no hour and minute)
+
+A list of built-in functions is available [here](https://spark.apache.org/docs/latest/api/sql/index.html)
+
+Besides these built-in functions, Spark allows us to create ***User Defined Functions*** (UDFs) with custom behaviour for those instances where creating SQL queries for that behaviour becomes difficult both to manage and test.
+
+UDFs are regular functions which are then passed as parameters to a special builder. Let's create one:
+
+```python
+# A crazy function that changes values when they're divisible by 7 or 3
+def crazy_stuff(base_num):
+    num = int(base_num[1:])
+    if num % 7 == 0:
+        return f's/{num:03x}'
+    elif num % 3 == 0:
+        return f'a/{num:03x}'
+    else:
+        return f'e/{num:03x}'
+
+# Creating the actual UDF
+crazy_stuff_udf = F.udf(crazy_stuff, returnType=types.StringType())
+```
+
+- `F.udf()` takes a function (`crazy_stuff()` in this example) as parameter as well as a return type for the function (a string in our example).
+- While `crazy_stuff()` is obviuosly non-sensical, UDFs are handy for things such as ML and other complex operations for which SQL isn't suitable or desirable. Python code is also easier to test than SQL.
+
+We can then use our UDF in ***transformations*** just like built-in functions:
+
+```python
+df \
+    .withColumn('pickup_date', F.to_date(df.pickup_datetime)) \
+    .withColumn('dropoff_date', F.to_date(df.dropoff_datetime)) \
+    .withColumn('base_id', crazy_stuff_udf(df.dispatching_base_num)) \
+    .select('base_id', 'pickup_date', 'dropoff_date', 'PULocationID', 'DOLocationID') \
+    .show()
+```
+
+# **5.5 Spark SQL**
+
+We already mentioned at the beginning that there are other tools for expressing batch jobs as SQL queries. However, Spark can also run SQL queires, which can come in handy if you already have Spark cluster and setting up an additional tool for sporadic use isn't desireable.
+
+## Combining the 2 datasets
+
+> ***NOTE***: this block makes use of the yellow and green taxi datasets for 2020 and 2021 as parquetized local files. It can be downloaded and parquetized the files directly; [check out this extran lesson](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/extra1_preparing_data.md) (from ziritrion) to see how
+
+Let's now load all of the yellow and green taxi data for 2020 and 2021 to Spark dataframes.
+
+Assuming the parquet files for the dataset are stored on a `data/pq/color/year/month` folder structure:
+
+```python
+df_green = spark.read.parquet('data/pq/green/*/*')
+df_green = df_green \
+    .withColumnRenamed('lpep_pickup_datetime', 'pickup_datetime') \
+    .withColumnRenamed('lpep_dropoff_datetime', 'dropoff_datetime')
+
+df_yellow = spark.read.parquet('data/pq/yellow/*/*')
+df_yellow = df_yellow \
+    .withColumnRenamed('tpep_pickup_datetime', 'pickup_datetime') \
+    .withColumnRenamed('tpep_dropoff_datetime', 'dropoff_datetime')
+```
+- Because the pickup and dropoff column names don't match between 2 datasets, we use the `withColumnRenamed`action to make them have matching name.
+
+We will replicate the [`dim_monthly_zone_revenue.sql`](https://github.com/acothaha/dbt_ny_taxi_rides_zoomcamp/blob/main/models/core/dim_monthly_zone_revenue.sql) model from lesson 4 in Spark. This model makes use of `trips_data`, a combined table of yellow and green taxis, so we will create a combined dataframe with the commong columns to both datasets.
+
+We need to find our which are the common columns. We could do this:
+
+```python
+set(df_green.columns) & set(df_yellow.columns)
+```
+
+However, this command will not respect the column order. We can do this instead to respect the order:
+
+```python
+common_colums = []
+
+yellow_columns = set(df_yellow.columns)
+
+for col in df_green.columns:
+    if col in yellow_columns:
+        common_colums.append(col)
+```
+
+Before we combine the datasets, we need to figure out how we will keep track of the taxi type for each record (the `service_type` field in `dim_monthly_zone_revenue.sql`). We will ad the service_type column to each dataframe.
+
+```python
+from pyspark.sql import functions as F
+
+df_green_sel = df_green \
+    .select(common_colums) \
+    .withColumn('service_type', F.lit('green'))
+
+df_yellow_sel = df_yellow \
+    .select(common_colums) \
+    .withColumn('service_type', F.lit('yellow'))
+```
+- `F.lit` adds a *literal* or constant to a dataframe. We use it here to fill the `service_type` column with a constant value, which is its corresponding taxi type.
+
+Finally, let's combine both datasets:
+```python
+df_trips_data = df_green_sel.unionAll(df_yellow_sel)
+```
+We can also count the amount of records per taxi type:
+```python
+df_trips_data.groupBy(`service_type`).count.show()
+```
+
+## Querying a dataset with Temporary Tables
+
+We can make SQL queries with Spark with `spark.sqll("SELECT * FROM ???")`. SQL expects a table for retrieving records, but a dataframe is not a table, so we need to ***register*** the dataframe as a table first:
+
+```python
+df_trips_data.createOrReplaceTempView('trips_data')
+```
+- This method creates a ***temporary table*** with the name `trips_data`
+
+With our registered table, we can now perform regular SQL operations:
+
+```python
+spark.sql("""
+SELECT
+    service_type,
+    count(1)
+FROM
+    trips_data
+GROUP BY 
+    service_type
+""").show()
+```
+
+- This query outputs the same as `df_trips_data.groupBy('service_type').count().show()`
+- Note that the SQL query is wrapped with 3 double quotes (`"`)
+
+The query output can be manipulated as a dataframe, which means that we can perform any queries on our table and manipulate the results with Python as we see fit.
+
+We can now slightly modify the [`dim_monthly_zone_revenue.sql`](https://github.com/acothaha/dbt_ny_taxi_rides_zoomcamp/blob/main/models/core/dim_monthly_zone_revenue.sql), and run it as a query with Spark and store the output in a dataframe:
+
+```python
+df_result = spark.sql("""
+SELECT 
+    -- Reveneue grouping 
+    PULocationID AS revenue_zone,
+    date_trunc('month', pickup_datetime) AS revenue_month, 
+    service_type, 
+
+    -- Revenue calculation 
+    SUM(fare_amount) AS revenue_monthly_fare,
+    SUM(extra) AS revenue_monthly_extra,
+    SUM(mta_tax) AS revenue_monthly_mta_tax,
+    SUM(tip_amount) AS revenue_monthly_tip_amount,
+    SUM(tolls_amount) AS revenue_monthly_tolls_amount,
+    SUM(improvement_surcharge) AS revenue_monthly_improvement_surcharge,
+    SUM(total_amount) AS revenue_monthly_total_amount,
+    SUM(congestion_surcharge) AS revenue_monthly_congestion_surcharge,
+
+    -- Additional calculations
+    AVG(passenger_count) AS avg_montly_passenger_count,
+    AVG(trip_distance) AS avg_montly_trip_distance
+FROM
+    trips_data
+GROUP BY
+    1, 2, 3
+""")
+```
+
+- We removed the `with` statement from the original query because it operates on an external table that Spark does not have access to.
+- We removed the `count(tripid) as total_monthly_trips`, line in *additional calculations* because in alse depends on that external table.
+- We change the grouping from field names to references in order to avoid mistake.
+
+SQL queries are ***transformations***, so we need an action to perform them such as `df_result.show()`.
+
+once we're happy with the output, we can also store it as a parquet file just like any other dataframe. We could run this:
+
+```python
+df_result.write.parquet('data/report/revenue/')
+```
+
+However, with our current dataset, this will create more that 200 parquet files of very small size, which isn't very desirable.
+
+In order to reducre the amount of files, we need to reduce the amount of partitions of the dataset, which is done with the `coalesce()` method:
+
+```python
+df_result.coalesce(1).write.parquet('data/report/revenue/', mode='overwrite')
+```
+
+This reduces the amount of partitions to just 1
+
+# **5.6 Spark internals**
+
+## Spark Cluster
+
+Until now, we've used a ***local cluster*** to run our Spark code, but Spark cluster often contain multiple computers that behace(act) as executors.
+
+Spark clusters are managed by a ***master***, which behaves similarly to an entry point of a kubernetes cluster. A ***driver*** (an Airflow DAG, a computer running a local script, etc) that wants to execute a Spark job will send the job to the master, which in turn will divide the work among the cluster's executors. If any executor fails and becomes offline for any reason, the master will reassign the task to another executor.
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark10.png"  width="" height="">
+
+Each executo will fetch a ***dataframe partition*** stored in a ***Data Lake*** (usually S3, GCS or similar cloud provider), do something with it and then store it somewhere, which could be the same Data Lake or somewhere else. If there are more partitions that executors, executors will keep fetching partitions until every single one has been processed.
+
+This is in contrast to [Hadoop](https://hadoop.apache.org/), another data analytics engine, whose executors locally store the data they process. Partitions in Hadoop are duplicated across several executors for redudancy, in case an executor fails for whatever reason (Hadoop is meant for clusters made of commodity hardware computers). However, data locality has become less important as storage and data transfer costs have dramatically decreased and nowadays it's feasible to seperate storage from computation, so Hadoop has fallen out of fashion.
+
+## GROUP BY in Spark
+
+Let's do the following query:
+
+```python
+df_green_revenue = spark.sql("""
+SELECT 
+    date_trunc('hour', lpep_pickup_datetime) AS hour, 
+    PULocationID AS zone,
+
+    SUM(total_amount) AS amount,
+    COUNT(1) AS number_records
+FROM
+    green
+WHERE
+    lpep_pickup_datetime >= '2020-01-01 00:00:00'
+GROUP BY
+    1, 2  
+""")
+```
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark11.png"  width="" height="">
