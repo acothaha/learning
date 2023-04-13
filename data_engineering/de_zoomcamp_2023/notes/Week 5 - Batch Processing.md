@@ -619,7 +619,7 @@ Spark clusters are managed by a ***master***, which behaves similarly to an entr
 
 <img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark10.png"  width="" height="">
 
-Each executo will fetch a ***dataframe partition*** stored in a ***Data Lake*** (usually S3, GCS or similar cloud provider), do something with it and then store it somewhere, which could be the same Data Lake or somewhere else. If there are more partitions that executors, executors will keep fetching partitions until every single one has been processed.
+Each executor will fetch a ***dataframe partition*** stored in a ***Data Lake*** (usually S3, GCS or similar cloud provider), do something with it and then store it somewhere, which could be the same Data Lake or somewhere else. If there are more partitions that executors, executors will keep fetching partitions until every single one has been processed.
 
 This is in contrast to [Hadoop](https://hadoop.apache.org/), another data analytics engine, whose executors locally store the data they process. Partitions in Hadoop are duplicated across several executors for redudancy, in case an executor fails for whatever reason (Hadoop is meant for clusters made of commodity hardware computers). However, data locality has become less important as storage and data transfer costs have dramatically decreased and nowadays it's feasible to seperate storage from computation, so Hadoop has fallen out of fashion.
 
@@ -644,4 +644,80 @@ GROUP BY
 """)
 ```
 
+This query will output the total revenue and amount of trips per hour per zone. We need to froup by hour and zones in order to do this.
+
+Since the data is split along partitions, it's likely that we will need to group data which is in separate partitions, but executor only deal with individual partitions. Spark solves this issue by seperating the grouping in 2 stages:
+
+1. IN the first stage, each executor groups the results in the partition they're working on and outputs the results to a temporary partition. These temporary partitions are the ***intermediate results***.
+
 <img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark11.png"  width="" height="">
+
+2. This second stage ***shuffles*** the data: Spark will put all records with the **same keys** (in this case, the `GROUP BY` keys which are hour and zone) in the **same partitition**. The algorithm to do this is called ***external merge sort***. Once the shuffling has finished, we can once again apply the `GROUP BY` to these new partitions and **reduce** the records to the **final output**.
+
+    > ***NOTE*** : The shuffled partitions may contain more than one key, but all records belonging to a key should end up in the same partition.
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark12.png"  width="" height="">
+
+Running the query should display the following [DAG](https://www.astronomer.io/blog/what-exactly-is-a-dag/) (Directed Acyclic Graph) in the Spark UI:
+
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark13.png"  width="" height="">
+
+- The `Exchange` task refers to shuffling
+
+If we were to add sorting to the query (adding a `ORDER BY 1, 2` at the end), Spark would perform a very similar operation to `GROUP BY` after grouping the data. The resulting DAG would look liked this:
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark14.png"  width="" height="">
+
+By default, Spark will repartition the dataframe to 200 partitions after shuffling data. FOre the kind of data we're dealing with in this example, this could be counterproductive because of the small size of each partition/file, but for larger datasets this is fine.
+
+Shuffling is an **expensive operation**, so it's in our best interest to reduce the amount of data to shuffle when querying.
+
+> Keep in mind that repartitioning also involves shuffling data.
+
+
+## JOIN in Spark
+
+Joining tables in Spark implemented a similar way to `GROUP BY` and `ORDER BY`, but there are 2 distinct cases; joining 2 large tables and joining a large table and a small table.
+
+### **Joining 2 large tables**
+
+Let's assume that we've created a `df_yellow_revenue` dataframe in the same manner as the `df_green_revenue`that we created in the previous section. WE want to join both tables, so we will create a temporary dataframes with changed column names so that we can tell apart data from each original table:
+
+```python
+df_green_revenue_tmp = df_green_revenue \
+    .withColumnRenamed('amount', 'green_amount') \
+    .withColumnRenamed('number_records', 'green_number_records')
+
+df_yellow_revenue_tmp = df_yellow_revenue \
+    .withColumnRenamed('amount', 'yellow_amount') \
+    .withColumnRenamed('number_records', 'yellow_number_records')
+```
+
+- Both of these queries are ***transformations***; Spark doesn't actually do anything when we run them.
+
+We will now perform an [outer join](https://dataschool.com/how-to-teach-people-sql/sql-join-types-explained-visually/) so that we can display the amount of trips and the revenue per hour per zone for green and yellow taxis at the same time regardless of whether the hour/zone combo had one type of taxi trips or the other;;
+
+```python
+df_join = df_green_revenue_tmp.join(df_yellow_revenue_tmp, on=['hour', 'zone'], how='outer')
+```
+
+- `on=` receives a list of columns which we will join the tables with. This will result in a ***primary composite key*** for the resulting table.
+- `how=` specifies the type of `JOIN` to execute.
+
+When we run either `show()` and `write()` on thos query, Spark will have to create both the temporary dataframes and the joint final dataframe. The DAG will look like this:
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark15.png"  width="" height="">
+
+Stage 1 and 2 belong to the craeting of `df_green_revenue_tmp` and `df_yellow_revenue_tmp`.
+
+for stage 3, given all records for yellow taxis `Y1, Y2, ..., Yn` and for green taxis `G1, G2, ..., Gn` and knowing that the resulting composite key is `key K = (hour H, zone Z)`, we can express the resulting complex records as `(Kn, Yn)` for yellow records and `(Kn, Gn)` for green record. Spark will first ***shuffle*** the data like it did for grouping (using the ***external merge sort algorithm***) and then it will ***reduce*** the records by joiningo yellow and green data for matching keys to show the final output.
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark16.png"  width="" height="">
+
+
+- Because we're doing an ***outer join***, keys which only have yellow taxi or green taxi records will be shown with empty field for the missing data, whereas keys with both types of records will show both yellow and green taxi data.
+    - If we did an ***inner join*** instead, the records such as `(K1, Y1, Ø)` and `(K4, Ø, G3)` would be excluded form the final result.
+
+
+
