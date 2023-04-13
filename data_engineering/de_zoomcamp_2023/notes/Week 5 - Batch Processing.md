@@ -720,4 +720,248 @@ for stage 3, given all records for yellow taxis `Y1, Y2, ..., Yn` and for green 
     - If we did an ***inner join*** instead, the records such as `(K1, Y1, Ø)` and `(K4, Ø, G3)` would be excluded form the final result.
 
 
+### **Joining a large table and a small table**
+
+> ***NOTE*** : This section assumes that you have run the code in the [test Jupyter Notebook](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_5_batch_processing/notebooks/03_test.ipynb) from the installing spark section and therefore have created a `zones` dataframe.
+
+Let's now use the `zones` lookup table to match each zone ID to its corresponding name.
+
+```
+df_zones = spark.read.parquet('zones/')
+
+df_result = df_join.join(df_zones, df_join.zone == df_zones.LocationID)
+
+df_result.drop('LocationID', 'zone').write.parquet('tmp/revenue-zones')
+```
+
+- the default join type in Spark SQL is the ***inner join***.
+- Because we ranamed the `LocationID` in the joint table to `zone`, we can't simply specify the columns to join and we need to provide a condition as criteria.
+- We use the `drop()` method to get rid of the extra columns we don't need anymore, because we only want ti keep the zone names and both `LocationID` and `zone` are duplicate columns with numeral ID's only.
+- We also use `write()` instead of `show()` because `show()` might now process all of the data.
+
+the `zones` table is actually very small and joining both table with merge sort is unnecessary. What Spark does instead is ***broadcasting***: Spark sends a copy of the complete table to all of the executors and each executor then joins each partition of the big table in memory by performing a lookup on the local broadcasted table.
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark17.png"  width="" height="">
+
+Shuffling isn't needed because each executor already has all of the necessary info to perform the join on each partition, this speeding up the join operation by orders of magnitude.
+
+# **5.7 resilient Distributed Datasets (RDDs)**
+
+## RDDs: Map and Reduce
+
+### **What are RDDs? How do they ralate to dataframes?**
+
+***Resilient Distributed Datasets*** (RDDs) are the main abstraction provided by Spark and consist of collection of elements partitioned across the nodes of cluster.
+
+Dataframes are actually built on top of RDDs and contain schema as well, which plain RDDs do not.
+
+### **From Dataframe to RDD**
+
+Spark dataframes contain a `rdd` field which contains the raw RDD of the dataframe. The RDD's object used for the dataframe are called ***rows***.
+Let's take a look once again at the SQL query we saw in the GROUP BY section:
+
+```SQL
+SELECT 
+    date_trunc('hour', lpep_pickup_datetime) AS hour, 
+    PULocationID AS zone,
+
+    SUM(total_amount) AS amount,
+    COUNT(1) AS number_records
+FROM
+    green
+WHERE
+    lpep_pickup_datetime >= '2020-01-01 00:00:00'
+GROUP BY
+    1, 2
+```
+
+we can re-implement this query with RDD's instead:
+1. We can re-implement the `SELECT` section by choosing the 3 fields from the RDD's rows.
+    ```python
+    rdd = df_green \
+    .select('lpep_pickup_datetime', 'PULocationID', 'total_amount') \
+    .rdd
+    ```
+
+2. We can implement the `WHERE` section by using the `filter()` and `take()` methods:
+
+    ```python
+    from datetime import datetime
+
+    start = datetime(year=2020, month=1, day=1)
+
+    def filter_outliers(row):
+        return row.lpep_pickup_datetime >= start
+
+    rdd.filter(filter_outliers).take(1)
+    ```
+
+    - `filter()` returns a new RDD containing only the elements that satisfy a *predicate*, which in our case is a function that we pass as a parameter.
+    - `take()` takes as many elements from the RDD as stated
+
+The `GROUP BY` is more complex and makes use of special methods.
+
+### **Operations on RDDs: `map`, `filter`, `reduceByKey`**
+
+1. WE need to generate *intermediate results* in a very similar way to the original SQL query, so we will need to create the *composite key* `(hour, zone)`and a `composite values` `(amount, count)`, which are the 2 halves of each record that the executors will generate. Once we have function that generated the record, we will use the `map()` method, which takes an RDD, transforms it with a function (our key-value function) and returns a new RDD.
+
+    ```python
+    def prepare_for_grouping(row): 
+        hour = row.lpep_pickup_datetime.replace(minute=0, second=0, microsecond=0)
+        zone = row.PULocationID
+        key = (hour, zone)
+        
+        amount = row.total_amount
+        count = 1
+        value = (amount, count)
+
+        return (key, value)
+
+
+    rdd \
+        .filter(filter_outliers) \
+        .map(prepare_for_grouping)
+    ```
+
+2. Now, we need to use the `reduceByKey()` method, which will take all record with the same key and put them together in a single record by transforming all the different values according to some rules which we can define with a custom function. Since we want to count the total amount adn the total number of records, we just need to add the values:
+
+    ```python
+    # we get 2 value tuples from 2 separate records as input
+    def calculate_revenue(left_value, right_value):
+        # tuple unpacking
+        left_amount, left_count = left_value
+        right_amount, right_count = right_value
+        
+        output_amount = left_amount + right_amount
+        output_count = left_count + right_count
+        
+        return (output_amount, output_count)
+
+    rdd \
+        .filter(filter_outliers) \
+        .map(prepare_for_grouping) \
+        .reduceByKey(calculate_revenue)
+    ```
+    - At the beginning, the output from the first calculation of two **rows** with the same key value will be used for the next calculation with the next ***row***.
+
+3. The output we have is already usable but not very nice, so we map the output again in order to *unwrap* it.
+
+    ```python
+    from collections import namedtuple
+    RevenueRow = namedtuple('RevenueRow', ['hour', 'zone', 'revenue', 'count'])
+    def unwrap(row):
+        return RevenueRow(
+            hour=row[0][0], 
+            zone=row[0][1],
+            revenue=row[1][0],
+            count=row[1][1]
+        )
+
+    rdd \
+        .filter(filter_outliers) \
+        .map(prepare_for_grouping) \
+        .reduceByKey(calculate_revenue) \
+        .map(unwrap)
+    ```
+    - Using `namedtuple` isn't necessary but it will help in the next step.
+
+### **From RDD to Dataframe**
+
+Finally, we can take the resulting RDD and convert it to a dataframe with `toDF()`. We will need to generate a schema first because we lost it when converting RDDs:
+
+```python
+from pyspark.sql import types
+
+result_schema = types.StructType([
+    types.StructField('hour', types.TimestampType(), True),
+    types.StructField('zone', types.IntegerType(), True),
+    types.StructField('revenue', types.DoubleType(), True),
+    types.StructField('count', types.IntegerType(), True)
+])
+
+df_result = rdd \
+    .filter(filter_outliers) \
+    .map(prepare_for_grouping) \
+    .reduceByKey(calculate_revenue) \
+    .map(unwrap) \
+    .toDF(result_schema) 
+```
+- WE can use `toDF()` without any schema as an input parameter, but Spark will have to figure out the schema by itself which may take a substantial amount of time. Using `namedtuple` in the previous step allows Spark to infer the column names but Spark will still need to figure out the data types; by passing a schema as a parameter we skip this step and get the output much faster.
+
+As you can see, manipulating RDDs to perform SQL-like queries is complex and time-consuming. Ever since Spark added support for dataframes and SQL, manipulating RDDs in this fashion has become obsolete (outdated), but since dataframes are built on top of RDDs, knowing how they work can help us understand how to make a better use of Spark.
+
+## Spark RDD mapPartitions
+
+The `mapPartitions()` function behaves similarly to `map()` in how it receives an RDD as input and transforms it into another RDD with a function that we define, but it transforms partitions rather than elements. In other words: `map()` create a new RDD by transforming every single element, whereas `mapPartitions()` transforms every partition to create a new RDD.
+
+`mapPartitions()` is convenient method for dealing with large datasets because it allows us to seperate it into chunks that we can process more easily, which is handy for workflows such as Machine Learning.
+
+### **Using mapPartitions() for ML**
+
+Let's demonstrate this workflow with an example. Let's assume we want to predict taxi travel length with the green taxi dataset. We will use `VendorID`, `lpep_pickup_datetime`, `PULocationID`, `DOLocationID` and `trip_distance` as out features. We will now create an RDD with these columns:
+
+```python
+columns = ['VendorID', 'lpep_pickup_datetime', 'PULocationID', 'DOLocationID', 'trip_distance']
+
+duration_rdd = df_green \
+    .select(columns) \
+    .rdd
+```
+
+Let's now create the method that `mapPartitions()` will use to transform the partitions. This method will essentially call our prediction model on the partition that we're transforming:
+
+```python
+import pandas as pd
+
+def model_predict(df):
+    # fancy ML code goes here
+    (...)
+    # predictions is a Pandas dataframe with the field predicted_duration in it
+    return predictions
+
+def apply_model_in_batch(rows):
+    df = pd.DataFrame(rows, columns=columns)
+    predictions = model_predict(df)
+    df['predicted_duration'] = predictions
+
+    for row in df.itertuples():
+        yield row
+```
+- We're assuming that our model works with Pandas dataframe, so we need to import the library
+- We are converting the input partition into a dataframe for the model
+    - RDD's do not contain column info, so we use the `columns` param to name the columns because our model may need them.
+    - Pandas will crash if the dataframe is too large for memory! We're assuming that this is not the case here, but you may have to take this into account when dealing with large partitions. You can use the [itertools package](https://docs.python.org/3/library/itertools.html) for slicing the the partitions before converting them to dataframes
+- Our model will return another Pandas dataframe with a `predicted_duration` column containing the model predictions.
+- `df.itertuples()` is an iterable that returns a tuple containing all the values in a single row, for all rows. Thus, `row` will contain a tuple with all the values for a single row.
+- `yield` is a Python keyword that behaves similarly to `return` but returns a ***generator object*** instead of value. This means that a function that uses `yield` can be iterated on. Spark makes use of the generator object in `mapPartitions()` to build the output RDD.
+    - You can learn about `yield` keyword [here](https://realpython.com/introduction-to-python-generators/)
+
+With our defined function, we are now ready to use `mapPartitions()` and run our prediction model on our full RDD:
+
+```python
+df_predicts = duration_rdd \
+    .mapPartitions(apply_model_in_batch)\
+    .toDF() \
+    .drop('Index')
+
+df_predicts.select('predicted_duration').show()
+```
+
+- We're not specifying the schema when create the dataframe, so it may take some time to compute.
+- We drop the `Index` field because it was created by Spark and it is not needed.
+
+As a final thought, you may have noticed that the `apply_model_in_batch()` method does NOT operate on a single elements, but rather it takes the whole partition and foes something with it (in our case, calling a ML model). if you need to operate on individual elements then you're better off with `map()`
+
+# **5.8 Running Spark in the Cloud**
+
+So far we've seen how to run Spark locally and how to work with local data. In this section we will cover how to use Spark with remote data and run Spark in the cloud as well.
+
+## Connecting to Google Cloud Storage
+
+Google Cloud Storage is an *object store*, which means that it doesn't offer a fully featured file system. Spark can connect to remote object stores by using ***connectors***; each object store has its own connector, so we will need to use [Google's Cloud Storage Connector](https://cloud.google.com/dataproc/docs/concepts/connectors/cloud-storage) if we want our local Spark instance to connect to our Data Lake.
+
+Before we do that, we will use `gsutil` to upload our local files into aour Data Lake. `gsutil` is included with the GCP SDK, so you should already have it if you've followed the previous chapters.
+
+### **Uploading files to Cloud Storage with `gsutil`**
+
 
