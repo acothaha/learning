@@ -152,3 +152,59 @@ Depending on the end-use cases, a data engineer's primary responsibilities are e
 
 An **external facing** data engineer typically aligns with the users of external-facing applications (e.g. social media apps, IoT devices, and ecommerce platform). This data engineer architects, builds, and manages the systems that collect, store, and process transactional and event data from these applications. The systems build by these data engineers have a feedback loop from the application to the data pipeline, and then back to the application.
 
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter1-5.png"  width="" height="">
+
+**Internal-facing**
+
+An **internal facing** data engineer typically focuses on activities crucial to the needs of the business and internal stakeholders. Examples include creating and maintaining data pipelines and data warehouses for BI dasboards, reports, business processes, data science and ML models.
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter1-6.png"  width="" height="">
+
+### Data Engineers and Other Technical Roles
+In practice, the data engineering lifecycle cuts across many domains of responsibility
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter1-7.png"  width="" height="">
+
+**Upstream Stakeholders**
+
+- *Data architects*
+
+    Data architects function at a levell of abstractions one step removed from data engineers. Data architects design the blueprint for organizational data management, mapping out processes and overall data architecture and systems. They also serve as a bridge between an organization's technical and nontechnical sides.
+
+- *Software engineers*
+
+    The systems built by software engineers typically generate application event data and logs, which are significant assets in their own right. In well-run technical organizations, software engineers and data engineers coordinate from the inception of a new project to design application data for consumption by analytics and ML applications.
+
+- *DevOps engineers* and *site-reliability engineers/QA engineers*
+
+    DevOps engineers and SREs/QAs often produce data through operational monitoring.
+
+**Downstream stakeholders**
+
+- *Data Scientists*
+
+    If data engineers do their job and collaborate successfully, data scientists shouldn't spend 70% to 80% (according to common industry folklore) of their time collecting, cleaning, and preparing data after initial exploratory work.
+
+- *Data Analyst*
+
+    Data engineers work with data analysts to build pipelines for new data sources required by the business. Data analysts' business-knowledge/subject-matter expertise is invaluable in improving data quality, and they frequently collaborate with data engineers in this capacity.
+
+- *Machine learning engineers* and *AI researchers*
+
+    The boundaries between ML engineering, data engineering, and data science are blurry. Data engineers may have some operational responsibilities over ML systems, and data scientists may work closely with ML engineering in designing advanced ML processes.
+
+### Data Engineers and Business Leadership
+
+Data engineers also operate more broadly as organizational connectors, often in a nontechnical capaity.
+
+**Data in the C-suite**
+
+- *Chief executive officer (CEO)*
+
+    CEOs define a vision in coolaboration with technical C-suite roles and company data leadership, while data engineers provide a window into what's possible with data with maintainng a map of what data is available to the organization—both internally and from third parties—in what time frame.
+
+- *Chief information officer (CIO)*
+
+    CIOs will work with engineers and architects to map out major initiatives and make strategic decisions on adopting major architectural elements, such as enterprise resource planning (ERP) and customer relationshop management (CRM) systems, cloud migrations, data systems, and internal-facing IT.
+    
+
