@@ -31,6 +31,10 @@
 [**2.7 Docker Storage with Infrastructure**](#27-docker-storage-with-infrastructure)
 - [Creating ETL Docker Image](#creating-etl-docker-image)
 
+
+[**2.8 Using Prefect Cloud**](#28-using-prefect-cloud)
+
+
 # **2.1 Data Lake (GCS)**
 
 ## What is Data Lake?
@@ -686,6 +690,37 @@ This should complete the workflow as you can see below and load the data into GC
 
 
 ![deployment](images/docker_deployment4.png)
+
+# **2.8 Using Prefect Cloud**
+
+Prefect provide a cloud service called ***Prefect Cloud*** that we can use for free with certain limitation. In order to utilize the service, we need to do this:
+
+1. [Sign in or register](https://docs.prefect.io/latest/cloud/cloud-quickstart/#sign-in-or-register) a ***Prefect Cloud*** account.
+
+2. [ Create a workspace](https://docs.prefect.io/latest/cloud/cloud-quickstart/#create-a-workspace) for your account.
+
+3. [Install Prefect](https://docs.prefect.io/latest/cloud/cloud-quickstart/#install-prefect) in your local environment.
+
+4. [Log into Prefect Cloud](https://docs.prefect.io/latest/cloud/cloud-quickstart/#log-into-prefect-cloud-from-a-terminal) from a local terminal session.
+
+    We can run this command to log into our ***Prefect Cloud*** account
+
+    ```bash
+    prefect cloud login
+    ```
+
+    And it will return how would us like to authenticate
+
+    ```
+    ? How would you like to authenticate? [Use arrows to move; enter to select]
+      Log in with a web browser
+    > Paste an API key
+    ```
+
+    - If you choose to log in with a web browser, it will redirect you to your browser to conduct the aunthetication
+    - If you choose to use an API key, you need to retrieve one first in your Prefect Cloud account.
+
+5. [Run a flow](https://docs.prefect.io/latest/cloud/cloud-quickstart/#run-a-flow-with-prefect-cloud) locally and view flow run execution in Prefect Cloud.
 
 
 
