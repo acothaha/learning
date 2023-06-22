@@ -1,0 +1,50 @@
+# Activate conda env
+
+conda activate {env_name}
+
+# running a python script
+
+python {path}
+
+# starting prefect server
+
+prefect orion start
+
+# creating a prefect deployment
+
+prefect deployment build {path}:{flow} -n "name" --cron "* * * * *" -a
+
+
+# pushing a prefect deployment into server
+
+prefect deployment apply {.yaml file}
+
+# Running a prefect deployment
+
+prefect deployment run {deployment_name}
+
+# Specifying API endpoint for a specific url
+
+prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+
+# starting an agent for running prefect work queue
+
+prefect agent start -q {profile_name}
+
+
+# login in docker hub
+
+docker login -u {username}
+
+# pushing docker image
+
+docker push {docker_name:tag}
+
+# deploy docker deploy python file
+
+python {path:docker python deplot file}
+
+# prefect cloud platform
+
+https://app.prefect.cloud/
+
