@@ -206,5 +206,33 @@ Data engineers also operate more broadly as organizational connectors, often in 
 - *Chief information officer (CIO)*
 
     CIOs will work with engineers and architects to map out major initiatives and make strategic decisions on adopting major architectural elements, such as enterprise resource planning (ERP) and customer relationshop management (CRM) systems, cloud migrations, data systems, and internal-facing IT.
+
+- *Chief technology officer (CTO)*
+
+    A CTO owns the key technological strategy and architectures for external-facing applications, such as mobile, web apps, and IoT—all critical data source for data engineers.
+
+- *Chief data office (CDO)*
+
+    The CDO is responsible for a company's data assets and strategy. CDOs oversee data products, strategy, initiatives, and core functions such as master data management and privacy.
+
+- *Chief analytics officer (CAO)*
+
+    The CAO is a variant of the CDO role. The CAO is responsible for analytics, strategy, and decision making for the business.
+
+- *Chief algorithms officer (CAO-2)*
+
+    The CAO-2 is a recent innovation in the C-suite. CAO-2s typically have experience as individual contributors and team leads in data science or ML projects.
+
+- *Data engineers and project managers*
+
+    Data engineers interact with project managers, often planning spring for projects and ensuing standups related to the sprint. Feedback goes both ways, with data engineers informing project managers and other stakeholders about progress and blockers, and projects managers balancing the candance of technologt teams againts the ever-changing needs of business.
+
+- *Data engineers and product managers*
+
+    Product managers oversse product development, often owning product lines. In the context of data engineers, these products are called *data products*. Data products are either build from the ground up or are incremental improvements upon existing products.
+    
+- *Data engineers and other management roles*
+
+    Data engineers either serve a variety of incoming requests as a centralized team or work as a resource assigned to a particular manager, project, or product
     
 
