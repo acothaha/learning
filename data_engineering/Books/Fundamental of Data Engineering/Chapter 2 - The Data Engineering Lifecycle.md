@@ -72,3 +72,24 @@ One of the most challanging nuances of source data is the schema. The ***schema*
 
 
 ### Storage
+
+Choosing a storage solution is a key to success in the rest of the data lifecycle, and it's also one of the most complicated stages of the data lifecycle for a variety of reasons:
+
+1. Data architectures in the cloud often leverage several storage solutions
+2. Few data storage solutions function purely as storage
+3. storage frequently touches on other stages
+
+In many ways, the way data is stored impacts how it is used in all of the stages of data engineering lifecycle.
+
+Here are a few keys questions to ask when choosing a storage system:
+
+- Is this storage soulition compatible with the architecture's required write and read speed?
+- Will storage create a bottleneck for downstream processes?
+- Do you understand how this storage technology works? Are you utilizing the storage system optimally or comimtting unnatural acts?
+- Will this storage system handle anticipated future scale? You should consider all capacity limits on the storage system total available storage, read operation rate, write volume, etc.
+- Will downstream users and processes be able to retrieve data in the required service-level agreement ([SLA](https://www.techtarget.com/searchitchannel/definition/service-level-agreement))?
+- Are you capturing metadata about schema evolution, data flows, data lineage, and so forth? 
+- Is this a pure storage solution (object storage), or does it support complex query patterns (e.g., a cloud data warehouse)?
+- Is the storage system schema-agnostic (object storage)? flexible schema (Cassandra)? enforce schema (a cloud data warehouse)?
+- How are you tracking master data, golden records data quality, and data lineage for data governance?
+- How are you handling regulatory compliance and data sovereignty? e.g., can you store your data in certain geographical locations but not others?
