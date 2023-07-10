@@ -93,3 +93,60 @@ Here are a few keys questions to ask when choosing a storage system:
 - Is the storage system schema-agnostic (object storage)? flexible schema (Cassandra)? enforce schema (a cloud data warehouse)?
 - How are you tracking master data, golden records data quality, and data lineage for data governance?
 - How are you handling regulatory compliance and data sovereignty? e.g., can you store your data in certain geographical locations but not others?
+
+#### Data access frequency
+
+Data access frequency will determine the *temperature* of your data. Data that is most frequently accessed is called *hot data*. This type of data is commonly retrieved many times per day, or even several times per second which according to some use cases can be categorized as fast. *Lukewarm data* is the data that might be accessed every so often—say, every week or month.
+
+*Cold data* is scarcely queried and and is appropiate for storing in an archival system. Cold data is often retained for compliance purposes or in case of catastrophic failure.
+
+#### Selecting a storage system
+
+Choosing a storage system depends on the use cases, data volumes, frequency of ingestion, and size of the data being ingested. There is no one-size-fits all universtal storage recommendation, each storage tech has its trade-offs.
+
+### Ingestion
+
+Based on the author's experiences, source systems and ingestion represent the most significant bottlenecks of data engineering lifecycle.
+
+When preparing to architect or build a system, here are some primary questions about ingestion stage:
+
+- What are the use cases for the data I'm ingesting? Can I reuse this data rather than createa multiple versions of the same dataset?
+
+- Are the systems generating and ingesting this data reliably, and is the data available when I need it?
+
+- What is the data destination after ingestion?
+
+- How frequently will I need to access the data?
+
+- In what volume will the data typically arrive?
+
+- What format is the data in? Can my downstream storage and transformation systems handle this format?
+
+- Is the source data in good shape for immediate downstream use? If so, for how long and what may cause it to be unsable?
+
+- If the data is from a streaming source, does it need to be transformed before reaching its destination? Would an in-flight transformation be appropiate, where the data is transformed within the stream itself?
+
+
+#### Batch vs streaming
+
+fundamentally, all data we deal with is inherently streaming. *batch ingestion* is simply a specialized and convenient way of processing the stream of data in large chunks. On the other hand, *streaming ingestion* processes the data in a continous, real-time fashion. *real-time* (or near *real-time*) means that the data is available to a downstream system a short time after it is produced. batch was for a long time the default way to ingest data, however lately, continuous processing of data streams is much more accessible and increasingly popular. 
+
+So, should you go streaming or batch? The following are some questions to be asked when determining whether streaming is an appropiate choice over batch ingestion:
+
+- If I ingest the data in real time, can downstream storage systems handle the rate approach of data flow?
+
+- Do i need millisecond real-time data ingestion? Or would a micro-batch approach work, accumulating and ingesting data, for instance, every minute?
+
+- What are my use case for streaming ingestion? What specific benefit do I realize by implementing streaming? If I get data in real time, what actions can I take on that data that would be an improvement upon batch?
+
+- Will my streaming-first approach cost more in terms of time, money, maintenance, downtime, and opportunity cost that simply doing batch?
+
+- Are my streaming pipeline and system reliable and redundant if infrastructure fails?
+
+- What tools are most appropiate for the use case? Should I use a managed service (Amazon Kinesis, Google Cloud Pub/Sub, Google Cloud Dataflow) or stand my own instances of Kafka, Flink, Spark, Pulsar, etc.? If I do the latter, who will manage it? what are the costs and trade-offs?
+
+- If I'm deploying a ML model, what benefit do I have with online predictions and possibly contiuous training?
+
+- Am I getting data from a live production instance? If so, what's the impact of my ingestion process on this source system?
+
+
