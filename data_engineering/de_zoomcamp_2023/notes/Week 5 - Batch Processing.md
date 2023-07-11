@@ -355,7 +355,7 @@ df = spark.read.parquet('fhvhv/2021/01/')
 Unlike CSV files, parquet files contain the schema of the dataset, so there is no need to specify a schema like we previously did when reading the CSV files. you can check the schema like this:
 
 ```python
-df.printschema()
+df.printSchema()
 ```
 
 (One of the reasons why parquet files are relatively smaller than CSV files is because they store the data according to the datatypes, so integer values will take less space than long or string values)
