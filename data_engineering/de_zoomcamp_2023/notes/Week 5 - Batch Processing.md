@@ -526,7 +526,7 @@ df_trips_data = df_green_sel.unionAll(df_yellow_sel)
 ```
 We can also count the amount of records per taxi type:
 ```python
-df_trips_data.groupBy(`service_type`).count.show()
+df_trips_data.groupBy(`service_type`).count().show()
 ```
 
 ## Querying a dataset with Temporary Tables
