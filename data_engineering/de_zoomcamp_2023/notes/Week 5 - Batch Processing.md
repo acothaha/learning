@@ -355,7 +355,7 @@ df = spark.read.parquet('fhvhv/2021/01/')
 Unlike CSV files, parquet files contain the schema of the dataset, so there is no need to specify a schema like we previously did when reading the CSV files. you can check the schema like this:
 
 ```python
-df.printschema()
+df.printSchema()
 ```
 
 (One of the reasons why parquet files are relatively smaller than CSV files is because they store the data according to the datatypes, so integer values will take less space than long or string values)
@@ -526,7 +526,7 @@ df_trips_data = df_green_sel.unionAll(df_yellow_sel)
 ```
 We can also count the amount of records per taxi type:
 ```python
-df_trips_data.groupBy(`service_type`).count.show()
+df_trips_data.groupBy(`service_type`).count().show()
 ```
 
 ## Querying a dataset with Temporary Tables
