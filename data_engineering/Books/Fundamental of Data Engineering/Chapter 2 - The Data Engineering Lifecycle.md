@@ -150,3 +150,54 @@ So, should you go streaming or batch? The following are some questions to be ask
 - Am I getting data from a live production instance? If so, what's the impact of my ingestion process on this source system?
 
 
+#### Push versus pull
+
+There are 2 main models of data ingestion:
+
+- ***Push*** model: A source system writes data out to a target, whether a database, object store, or filesystem
+
+- ***Pull*** model: Data is retrieved from the source system.
+
+
+### Transformation
+
+***Transforming*** is the process of changing data from its original form into something useful for downstream use cases.
+
+These are some transformation which usually conducted:
+
+- Basic: Map data into correct data types, putting records into standard format, and removing bad data
+- Later stage: data schema transformation and normalization
+- Other: large-scale aggregation, feature engineering
+
+The following are some questions to be asked when considering data transformations within the data engineering lifecycle:
+
+- What's the cost and return on investment (ROI) of the transformation? What is the assocaited business value?
+
+- Is the transformation as simple and self-isolated as possible?
+
+- What business rules do the transformations support?
+
+You can transform data in batch or while streaming in flight.
+
+Business logic is a major driver of data transformation, often in data modeling.
+
+### Serving Data
+
+Data has *value* when it's used for practical purposes. Data projects must be intentional across the lifecycle. What is the ultimate business purpose of the data so carefully collected, cleaned and stored?
+
+Data serving meaning the uses of data, these are some popular uses of data"
+
+#### Analytics
+
+Analytics is the core of most data endevours. Here are some variations of analytics:
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter2-2.png"  width="" height="">
+
+1. Business intelligence  
+BI engineer/analyst collected data to describe a business' past and current state. BI requires using business logic to process raw data. As a company grows its data maturity, it will move from ad hoc data analysis to self-service analytics, allowing democratized data access to business users without needing IT to intervene.
+
+2. Operational analytics
+Operational analytics focuses on the fine-grained details of operations. Operational analytics could be a live view of inventory or real-time dashboarding of website or application health.
+
+3. Embedded analytics
+Embedded analytics is the integration of analytical capabilities and data visualizations into another software application. With Embedded analytics the request rate for reports, and the corresponding burden on analytics systems, goes up dramatically; access control is significantly more complicated and critical.
