@@ -194,10 +194,61 @@ Analytics is the core of most data endevours. Here are some variations of analyt
 <img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter2-2.png"  width="" height="">
 
 1. Business intelligence  
-BI engineer/analyst collected data to describe a business' past and current state. BI requires using business logic to process raw data. As a company grows its data maturity, it will move from ad hoc data analysis to self-service analytics, allowing democratized data access to business users without needing IT to intervene.
 
-2. Operational analytics
-Operational analytics focuses on the fine-grained details of operations. Operational analytics could be a live view of inventory or real-time dashboarding of website or application health.
+    BI engineer/analyst collected data to describe a business' past and current state. BI requires using business logic to process raw data. As a company grows its data maturity, it will move from ad hoc data analysis to self-service analytics, allowing democratized data access to business users without needing IT to intervene.
 
-3. Embedded analytics
-Embedded analytics is the integration of analytical capabilities and data visualizations into another software application. With Embedded analytics the request rate for reports, and the corresponding burden on analytics systems, goes up dramatically; access control is significantly more complicated and critical.
+2. Operational analytics  
+
+    Operational analytics focuses on the fine-grained details of operations. Operational analytics could be a live view of inventory or real-time dashboarding of website or application health.
+
+3. Embedded analytics  
+
+    Embedded analytics is the integration of analytical capabilities and data visualizations into another software application. With Embedded analytics the request rate for reports, and the corresponding burden on analytics systems, goes up dramatically; access control is significantly more complicated and critical.
+
+4. Machine learning  
+
+    The boundaries between data engineering, ML engineering and analytics engineering can be fuzzy. But there is a recent developed tool that combines data egnineering and ML engineering called ***Feature Store***. Feature stores are designed to reduce the operational burden for ML engineers by maintaining feature history and versions, supporting feature sharing among teams, and providing basic operational and orchestration capabilities.
+
+4. Reverse ETL
+
+    ***Reverse ETL*** takes processed data from the output side of the data engineering lifecycle and feeds it back into source systems. Reverse ETL allows us to take analytics, scored models, etc and feed these back into production systemsn or SaaS platform. Reverse ETL has become especially important as business erly increasingly on SaaS and external platforms
+
+    
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter2-3.png"  width="" height="">
+
+### Major Undercurrents Across the Data Engineering Lifecycle
+
+Data engineering is rapidly maturing. Whereas prior cycles of data engineering simply focused on the technology layer, the field is now moving up the value chain, incorporating traditional enterprise practices such as data management and cost optimization and newer practices like DataOps.
+
+The term for these practices are *undercurrents*—security, data management, DataOps,
+data architecture, orchestration, and software engineering—that support every aspect
+of the data engineering lifecycle.
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/chapter2-4.png"  width="" height="">
+
+1. Security 
+
+    Security must be top of mind for data engineers and there is a reason why it is the first undercurrent. Data engineers must understand both data and access security, exercising the principle of least privilage.  The [principle of least privilage](https://en.wikipedia.org/wiki/Principle_of_least_privilege) means giving a user or system access to tonly the essential data and resources to perform an intended function. Give users only the access tthey need to do their job today, nothing more.  
+    People and organizational structure are always the biggest security vulnerabilities in any company. The first line of defense for data security is to createa culture of security that permeates the organization.  
+    Data security is also about **timing**—providing data access to exactly the people and
+systems that need to access it and only for the duration necessary to perform their
+work.
+
+2. Data Management
+
+    Accroding to The Data Management Association International (DAMA) Data Management Body of
+Knowledge (DMBOK)
+
+        Data management is the development, execution, and supervision of plans, policies, programs, and practices that deliver, control, protect and enhance the value of data and information assets throughout their lifecycle.
+
+    Data engineers manage the data lifecycle, and data management encompasses the set of beset practices that data engineers will use to accomplish this task, bot technically and strategically. Data Management is important due to the face it demonstrates that data is vital to daily operations, just as business view financial resources, finished goods, or real estate assets.  
+    Data management has quite a few facets (aspects), including the following
+
+    - Data governance, including [discoverability](https://snowplow.io/blog/data-discovery/) and [accountability](https://edps.europa.eu/data-protection/our-work/subjects/accountability_en)
+    - Data modeling and design
+    - [Data lineage](https://www.ibm.com/id-en/topics/data-lineage)
+    - Storage and operations
+    - Data integration and [Interoperability](https://www.data4sdgs.org/initiatives/data-interoperability-collaborative)
+    - Data lifecycle management
+    - Data systems for advanced analytics and ML
+    - Ethics and privacy
