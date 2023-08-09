@@ -1,10 +1,63 @@
-# WEEK 5: BATCH PROCESSING
+# WEEK 6: STREAM  PROCESSING
 
 ### Table of Contents
 
-# **5.1 Introduction to Batch Processing**
+# **6.1 Introduction to Stream Processing**
 
-## Batch vs Streaming
+# **6.2 Introduction to Kafka**
+
+## What is Kafka?
+
+
+[Apache Kafka](https://kafka.apache.org/) is a ***message broker*** and ***stream processor***. Kafka is used to handle ***real-time data feeds***
+
+in a data project, we can differentiate between:
+
+- ***Consumers***: Those that consume the data (web pages, micro services, app, etc.).
+- ***Producers***: Those that supply the data to consumers.
+
+Connecting consumers to producers directly can lead to an amorphous and hard to maintain architecture in complex projects. Kafka solves the issue by becoming an intermediary that all other components connect to. Kafka works by allowing producers to send ***messages*** which are then pushed in real time by Kafka to consumers.
+
+Kafka is hugely populars, since Kafka has these benefits:
+
+1. Robustness - Even the server is going down, you will still receive the data. That is the property of Kafka called *replication*.
+2. Flexibility - Kafka provides a lot of integration and option to where to store your data so that you can spend less. Also you can have 100 consumers or even 1 consumer.
+3. Scalability - Kafka can handle a small size of streaming data until a really big one. 
+
+
+*There is an [animated comic](https://www.gentlydownthe.stream/) to learn more about kafka*
+
+## Basic Kafka Components
+
+### Message
+
+The basic communication abstraction used bt producers and consumers in order to share information in Kafka is called a ***message***.
+
+Messages have 3 main components:
+
+1. ***Key***: Used to identify the message and for additional Kafka thing such as partitions
+2. ***Value***: The actual information that producers push and consumers are interested in
+3. ***Timestamp***: Used for logging
+
+### Message
+
+A ***topic*** is an abstraction of a concept. Concepts can be anything that makes sense in the context of the project, such as "sales data", "new members", "clicks on banner", etc.
+
+A producer pushes a message to a topic, which is then consumed by the customer(s) subscribed to that topic.
+
+### Broker and Cluster
+
+A ***Kafka Broker*** is a machine (physical or virtual) on which Kafka is running
+
+A ***Kafka Cluster*** is a collection of brokers (nodes) working together
+
+### Logs
+
+In Kafka, ***Logs*** are data segments present on a storage disk. In other words, They are the *physical representations* of data.
+
+Logs store messages in an ordered fashion. Kafka assigns a sequence ID in order to each new messages and then stores it in logs.
+
+
 
 There are 2 ways of processing data:
 - ***Batch Processing***: Processing *chunks* of data at *regular interval*.
@@ -1069,365 +1122,4 @@ Simply go to your Spark install directory from the terminal and run the followin
 
 You should now be able to open the main Spark dashboard by browsing to localhost:8080 (remember to forward the port if you're running it on a virtual machine). At the very top of the dashboard the URL for the dashboard should appear; 
 
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark18.png"  width="" height="">
-
-copy it and use it on your session code like so
-
-```
-spark = SparkSession.builder \
-    .master("spark://<URL>:7077") \
-    .appName('test') \
-    .getOrCreate()
-```
-- Note the we used the HTTP port 8080 for browsing to the dashboard but we use the Spark port 7077 for connecting our code to the cluster
-- Using `localhost` as a stand-in for the URL may not work
-
-You may ntoe that in the Spark dashboard there aren't any *workers* listed. The actual Spark jobs are run form within ***workers*** (or slaves in older Spark version), which we need to create and set up.
-
-Similarly to how we create the Spark master, we can run a worker from the command line by running the following command from the Spark install directory:
-
-```bash
-./sbin/start-worker.sh <master-spark-URL>
-```
-
-once you;ve run the command, you should see a worker in the Spark dashboard.
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark19.png"  width="" height="">
-
-Note that a worker may not be able to run multiple jobs simultaneously. If you're running separate notebooks and connecting to the same Spark worker, you can check in the Spark dashboard how many Running Applications exist. Since we haven't configured the workers, any jobs will take as many resources as there are available for the job.
-
-### **Parametrizing our scripts for Spark**
-
-So far, we've hard-coded many of the values such as folders and dates in our code, bit with a little bit of tweaking we can make our code so that it can receive parameters from spark and make our code much more reusable and versatile.
-
-We will use the [argparse library](https://docs.python.org/3/library/argparse.html) for parsing parameters. Convert a notebook to a script with `nbconvert`, manually modify it or create it from scratch and add the following :
-
-```python
-import argparse
-
-import pyspark
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
-
-parser.add_argument('--input_green', required=True)
-parser.add_argument('--input_yellow', required=True)
-parser.add_argument('--output', required=True)
-
-input_green = args.input_green
-input_yellow = args.input_yellow
-output = args.output
-```
-
-We can now modify previous lines using the 3 parameters we've created. For example:
-
-```python
-df_green = spark.read.parquet(input_green)
-```
-
-Once we've finished our script, we simply call it from a terminal line with the parameters we need:
-
-```bash
-python my_script.py \
-    --input_green=data/pq/green/2020/*/ \
-    --input_yellow=data/pq/yellow/2020/*/ \
-    --output=data/report-2020
-```
-
-### **Submitting Spark jobs with Spark submit**
-
-However, we still haven't covered any Spark specific parameters; things like the cluster URL when having multuple available cluster or how many workers to use for the job. Instead of specifying these parameters when setting up the session inside the script, we can use an external script called [Spark submit](https://spark.apache.org/docs/latest/submitting-applications.html)
-
-The basic usage is as follows:
-```bash
-spark-submit \
-    --master="spark://<URL>" \
-    my_script.py \
-        --input_green=data/pq/green/2020/*/ \
-        --input_yellow=data/pq/yellow/2020/*/ \
-        --output=data/report-2020
-```
-and the Spark session code in teh script is simplified like so:
-
-```python
-spark = SparkSession.builder \
-    .appName('test') \
-    .getOrCreate()
-```
-
-You may find more sophisticated uses of `spark-submit` in the [official documentation](https://spark.apache.org/docs/latest/submitting-applications.html)
-
-> The finished script can be accessed [here](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_5_batch_processing/notebooks/06_spark_sql.py)
-
-After you're done running Spark in standalone mode, you will need to manually shut it down. Simply run below command to stop the workers
-```bash
-./sbin/stop-worker.sh
-```
-
-and below command to shut down Spark
-
-```bash
-./sbin/stop-master.sh
-```
-
-## Setting up a Dataproc Cluster
-
-### **Create the cluster**
-
-[Dataproc](https://cloud.google.com/dataproc) is Google's cloud-managed service for running Spark and other data processing tools such as Flink, Presto, etc.
-
-You may access Dataproc from the GCP dashboard and typing `dataproc` on the search bar. The first time you access it, you will have to enable the API.
-
-In the image below you may find some example values for creating a simple cluster. Give it a name of your choosing and choose the same region as your bucket.
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark20.png"  width="" height="">
-
-We would normally choose a `standard` cluster, but you may choose `single node` if you just want to experiment and not run any jobs.
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark21.png"  width="" height="">
-
-Optionally, you may install additional components. But we won't be covering them in this moment.
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark22.png"  width="" height="">
-
-You may leave all other optional settings with their default values. After you click on `Create`, it will take a few seconds to create the cluster. You may notice an extra VM instace under VMs; that's the Spark instance.
-
-### **Running a job with the web UI**
-
-in a [previous section](#configuring-spark-with-the-gcs-connector) we saw how to connect Spark to our bucket in GCP. However, in Dataproc we don't need to specify this connection because it's already pre-configured for us. We will also submit jobs using a menu, following similar principles to  waht we saw in the previous section.
-
-In Dataproc's *Cluster* page, choose your clister and on the *Cluster details* page, click on `Submit job`. Under *Job type* choose PySpark, then in *Main Python file* write the path to your script (you may upload the script to your bucket and the ncopy the URL)
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark23.png"  width="" height="">
-
-Make sure that your script does not specify the master cluster!! Your script should take the connection details from Dataproc; make sure it looks something like this:
-
-```python
-spark = SparkSession.builder \
-    .appName('test') \
-    .getOrCreate()
-```
-
-You may use this [script](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_5_batch_processing/notebooks/06_spark_sql.py) for testing.
-
-We also need to specify arguments, in a similar fashion to what we saw [in the previous section](#parametrizing-our-scripts-for-spark), but using the URL's for our folders rather than the local paths:
-
-<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/spark24.png"  width="" height="">
-
-Now press `Submit`. Sadly there is no easy way to access the Spark dashboard, but you can check the status of the job from the `Job details` page.
-
-### **Running a job with gcloud SDK**
-
-Besides the web UI, there are additional ways to run a job, listed [in this link](https://cloud.google.com/dataproc/docs/guides/submit-job). We will focus on the gcloud SDK now.
-
-Before you can submit jobs with the SDK, you will need to grant permissions to the Service Account we've been using so far. Go to *IAM & Admin* and edit your Service Account so that the `Dataproc Administrator` role is added to it.
-
-We can now submit a job from the command line, like this:
-
-```bash
-gcloud dataproc jobs submit pyspark \
-    --cluster=<your-cluster-name> \
-    --region=<region-of-your-bucket> \
-    gs://<url-of-your-script> \
-    -- \
-        --param1=<your-param-value> \
-        --param2=<your-param-value>
-```
-you may find more details on how to run jobs [in the official docs](https://cloud.google.com/dataproc/docs/guides/submit-job)
-
-## Connecting Spark to Big Query
-
-This [link](https://cloud.google.com/dataproc/docs/tutorials/bigquery-connector-spark-example#pyspark) talks about connecting Spark to BigQuery. Here is the code appearing at this link:
-
-```python
-#!/usr/bin/env python
-
-"""BigQuery I/O PySpark example."""
-
-from pyspark.sql import SparkSession
-
-spark = SparkSession \
-  .builder \
-  .master('yarn') \
-  .appName('spark-bigquery-demo') \
-  .getOrCreate()
-
-# Use the Cloud Storage bucket for temporary BigQuery export data used
-# by the connector.
-bucket = "[bucket]"
-spark.conf.set('temporaryGcsBucket', bucket)
-
-# Load data from BigQuery.
-words = spark.read.format('bigquery') \
-  .option('table', 'bigquery-public-data:samples.shakespeare') \
-  .load()
-words.createOrReplaceTempView('words')
-
-# Perform word count.
-word_count = spark.sql(
-    'SELECT word, SUM(word_count) AS word_count FROM words GROUP BY word')
-word_count.show()
-word_count.printSchema()
-
-# Saving the data to BigQuery
-word_count.write.format('bigquery') \
-  .option('table', 'wordcount_dataset.wordcount_output') \
-  .save()
-```
-
-Using the example above as template, we will modify our code. See [06_spark_sql_big_query.py](https://github.com/acothaha/learning/blob/main/data_engineering/de_zoomcamp_2023/week_5_batch_processing/notebooks/06_spark_sql_big_query.py) on the Github repo.
-
-First, we need to know the name of the buckets created by dataproc. Go to your **Bucket** in Google Cloud Storage. We will see two buckets whose name begins with dataproc. We will use the one with the `temp` in it (e.g. dataproc-temp-us-central1-...)
-
-So, we should modify our Python script accordingly
-
-```python
-#!/usr/bin/env python
-# coding: utf-8
-
-import argparse
-
-import pyspark
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
-
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument('--input_green', required=True)
-parser.add_argument('--input_yellow', required=True)
-parser.add_argument('--output', required=True)
-
-args = parser.parse_args()
-
-input_green = args.input_green
-input_yellow = args.input_yellow
-output = args.output
-
-
-spark = SparkSession.builder \
-    .appName('test') \
-    .getOrCreate()
-
-# First modification.
-# Use the Cloud Storage bucket for temporary BigQuery export data used
-# by the connector.
-bucket = "dataproc-temp-us-central1-..."
-spark.conf.set('temporaryGcsBucket', bucket)
-
-df_green = spark.read.parquet(input_green)
-
-df_green = df_green \
-    .withColumnRenamed('lpep_pickup_datetime', 'pickup_datetime') \
-    .withColumnRenamed('lpep_dropoff_datetime', 'dropoff_datetime')
-
-df_yellow = spark.read.parquet(input_yellow)
-
-
-df_yellow = df_yellow \
-    .withColumnRenamed('tpep_pickup_datetime', 'pickup_datetime') \
-    .withColumnRenamed('tpep_dropoff_datetime', 'dropoff_datetime')
-
-
-common_colums = [
-    'VendorID',
-    'pickup_datetime',
-    'dropoff_datetime',
-    'store_and_fwd_flag',
-    'RatecodeID',
-    'PULocationID',
-    'DOLocationID',
-    'passenger_count',
-    'trip_distance',
-    'fare_amount',
-    'extra',
-    'mta_tax',
-    'tip_amount',
-    'tolls_amount',
-    'improvement_surcharge',
-    'total_amount',
-    'payment_type',
-    'congestion_surcharge'
-]
-
-
-
-df_green_sel = df_green \
-    .select(common_colums) \
-    .withColumn('service_type', F.lit('green'))
-
-df_yellow_sel = df_yellow \
-    .select(common_colums) \
-    .withColumn('service_type', F.lit('yellow'))
-
-
-df_trips_data = df_green_sel.unionAll(df_yellow_sel)
-
-df_trips_data.registerTempTable('trips_data')
-
-
-df_result = spark.sql("""
-SELECT
-    -- Reveneue grouping
-    PULocationID AS revenue_zone,
-    date_trunc('month', pickup_datetime) AS revenue_month,
-    service_type,
-
-    -- Revenue calculation
-    SUM(fare_amount) AS revenue_monthly_fare,
-    SUM(extra) AS revenue_monthly_extra,
-    SUM(mta_tax) AS revenue_monthly_mta_tax,
-    SUM(tip_amount) AS revenue_monthly_tip_amount,
-    SUM(tolls_amount) AS revenue_monthly_tolls_amount,
-    SUM(improvement_surcharge) AS revenue_monthly_improvement_surcharge,
-    SUM(total_amount) AS revenue_monthly_total_amount,
-    SUM(congestion_surcharge) AS revenue_monthly_congestion_surcharge,
-
-    -- Additional calculations
-    AVG(passenger_count) AS avg_montly_passenger_count,
-    AVG(trip_distance) AS avg_montly_trip_distance
-FROM
-    trips_data
-GROUP BY
-    1, 2, 3
-""")
-
-# Second modification.
-# Saving the data to BigQuery
-df_result.write.format('bigquery') \
-    .option('table', output) \
-    .save()
-```
-
-Now, we have our Python script ready then we can upload it to Google Cloud Storage with the following command:
-
-```bash
-gsutil cp 06_spark_sql_big_query.py <your-gcs-URI>/code/06_spark_sql_big_query.py
-```
-
-Now go to your BigQuery, and take a look at the existing schema which we have created `trips_data_all`
-
-So, we slightly modify the script created previously to create the report in BigQuery by indicating the schema name for the report (`--output=trips_data_all.reports-2020`). We also need to specify the connector jar (`--jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar`)
-
-```bash
-gcloud dataproc jobs submit pyspark \
-    --cluster=de-zoomcamp-cluster \
-    --region=northamerica-northeast1 \
-    --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar \
-    gs://dtc_data_lake_hopeful-summer-375416/code/06_spark_sql_big_query.py \
-    -- \
-        --input_green=gs://dtc_data_lake_hopeful-summer-375416/pq/green/2020/*/ \
-        --input_yellow=gs://dtc_data_lake_hopeful-summer-375416/pq/yellow/2020/*/ \
-        --output=trips_data_all.reports-2020
-```
-
-Run the `gcloud dataproc` command above on the VM instace and see what happens.
-
-Go to **BigQuery**, we should see the report `reports-2020` created under `trips_data_all`.
-
-To make sure, just run this query.
-
-```SQL
-SELECT * FROM `hopeful-summer-375416.trips_data_all.reports-2020` LIMIT 10;
-```
 
