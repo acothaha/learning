@@ -2,60 +2,6 @@
 
 ### Table of Contents
 
-[**5.1 Introduction to Batch Processing**](#--51-introduction-to-batch-processing--)
-- [Batch vs Streaming](#batch-vs-streaming)
-- [Type of batch jobs](#type-of-batch-jobs)
-- [Orchestration batch jobs](#orchestration-batch-jobs)
-- [Pros and cons of batch jobs](#pros-and-cons-of-batch-jobs)
-
-[**5.2 Introduction to Spark**](#--52-introduction-to-spark--)
-* [What is Spark?](#what-is-spark-)
-* [Why do we need Spark?](#why-do-we-need-spark-)
-
-[**5.3 Installing Spark**](#--53-installing-spark--)
-* [Installation on Linux](#installation-on-linux)
-
-[**5.4 First look at Spark/PySpark**](#--54-first-look-at-spark-pyspark--)
-* [Creating a Spark Session](#creating-a-spark-session)
-* [Reading CSV files](#reading-csv-files)
-* [Partitions](#partitions)
-* [Spark dataframes](#spark-dataframes)
-* [Actions vs Transformations](#actions-vs-transformations)
-* [Functions and User Defined Functins (UDFs)](#functions-and-user-defined-functins--udfs-)
-
-[**5.5 Spark SQL**](#--55-spark-sql--)
-* [Combining the 2 datasets](#combining-the-2-datasets)
-* [Querying a dataset with Temporary Tables](#querying-a-dataset-with-temporary-tables)
-
-[**5.6 Spark internals**](#--56-spark-internals--)
-* [Spark Cluster](#spark-cluster)
-* [GROUP BY in Spark](#group-by-in-spark)
-* [JOIN in Spark](#join-in-spark)
-
-[**5.7 resilient Distributed Datasets (RDDs)**](#--57-resilient-distributed-datasets--rdds---)
-* [RDDs: Map and Reduce](#rdds--map-and-reduce)
-    + [**What are RDDs? How do they ralate to dataframes?**](#--what-are-rdds--how-do-they-ralate-to-dataframes---)
-    + [**From Dataframe to RDD**](#--from-dataframe-to-rdd--)
-    + [**Operations on RDDs: `map`, `filter`, `reduceByKey`**](#--operations-on-rdds---map----filter----reducebykey---)
-    + [**From RDD to Dataframe**](#--from-rdd-to-dataframe--)
-  * [Spark RDD mapPartitions](#spark-rdd-mappartitions)
-
-[**5.8 Running Spark in the Cloud**](#--58-running-spark-in-the-cloud--)
-  * [Connecting to Google Cloud Storage](#connecting-to-google-cloud-storage)
-    + [**Uploading files to Cloud Storage with `gsutil`**](#--uploading-files-to-cloud-storage-with--gsutil---)
-    + [**Configuring Spark with the GCS connector**](#--configuring-spark-with-the-gcs-connector--)
-    + [**Reading the remote data**](#--reading-the-remote-data--)
-  * [Creating a Local Spark Cluster](#creating-a-local-spark-cluster)
-    + [**Spark standalone master and workers**](#--spark-standalone-master-and-workers--)
-    + [**Parametrizing our scripts for Spark**](#--parametrizing-our-scripts-for-spark--)
-    + [**Submitting Spark jobs with Spark submit**](#--submitting-spark-jobs-with-spark-submit--)
-  * [Setting up a Dataproc Cluster](#setting-up-a-dataproc-cluster)
-    + [**Create the cluster**](#--create-the-cluster--)
-    + [**Running a job with the web UI**](#--running-a-job-with-the-web-ui--)
-    + [**Running a job with gcloud SDK**](#--running-a-job-with-gcloud-sdk--)
-  * [Connecting Spark to Big Query](#connecting-spark-to-big-query)
-
-
 # **5.1 Introduction to Batch Processing**
 
 ## Batch vs Streaming
