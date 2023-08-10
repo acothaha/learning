@@ -57,6 +57,53 @@ In Kafka, ***Logs*** are data segments present on a storage disk. In other words
 
 Logs store messages in an ordered fashion. Kafka assigns a sequence ID in order to each new messages and then stores it in logs.
 
+###  Visualizing the concepts
+
+Here's how a producer and a consumer would talk to the same Kafka broker to send and receive messages.
+
+- Producers sending messages to Kafka
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/kafka1.png"  width="" height="">
+
+1. The producer first declares the topic it wants to "talk about" to Kafka. In this case, the topic will be `abc`. Kafka will then assign a *physical location* on the hard drive for that specific topic (the topic logs)
+
+2. The producer then sends messages to Kafka (In this case, messages 1, 2, and 3)
+
+3. Kafka assigns an ID to the messages and writes them to the logs
+
+4. Kafka sends an acknowledgement to the producer, informing it that the messages were successfully sent and written
+
+- Consumer receiving messages
+
+<img style="margin: 2em; display: block; margin-left: auto; margin-right: auto;" src="images/kafka2.png"  width="" height="">
+
+1. The consumer declares to Kafka that it wants to read from a particular topic. In our example, the topic is `abc`
+
+2. Kafka checks the logs and figures out which messages from the topic that have been read and not
+
+3. Kafka sends the unread messages to the customer
+
+4. The consumer sends an acknowledgement to Kafka, informing it that the messages were successfully received.
+
+The workflows work fine for a single consumer but it omits how it keeps track of read messages. It also doesn't show what would happen if 2 or more consumers are consuming messages for the same topic. this is where ***`__consumer_offset`*** used.
+
+***`__consumer_offset`*** is a special topic that keeps track of messages read by each consumer and topic. In other words, Kafka uses itself to keep track of what consumers do.
+
+When a consumer reads messages and Kafka receives the acknowledgement, Kafka will post a message to ***`__consumer_offset`***  with the consumer ID, the topic and the message IDs that the consumers has read. If the consumer dies and spawns again, Kafka will know the last message delivered to it in order to resume sending new ones. If multiple consumers are present, Kafka knows which consumers have read which messages, so a message that has been read by consumer_1 but not by consumer_2 can still be sent to consumer_2.
+
+### Consumer Groups
+
+a ***consumer group*** is composed of multiple consumers.
+
+In regard of controlling read messages, Kafka treats all the consumers inside a consumer group as *single entity*: when a consumer inside a group reads a message, that messages will ***NOT*** be delivered to any other consumer in the group.
+
+Consumer groups allow consumer apps to scale independently; a consumer app made of multiple consumer nodes will not have to deal with duplicated or redundant messages.
+
+Consumer groups have IDs and all consumers within a group have IDs as well.
+
+The default value for consumer groups is 1. All consumers belong to a consumer group.
+
+### Consumer Groups
 
 
 There are 2 ways of processing data:
