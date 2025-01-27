@@ -46,3 +46,4 @@ data_engineering/de_zoomcamp_2023/week_5_batch_processing/notebooks/zones/*
 *.crc
 data_engineering/de_zoomcamp_2023/week_5_batch_processing/code/data/pq/green/2021/02/_SUCCESS
 data_engineering/de_zoomcamp_2023/test
+data_engineering/de_zoomcamp_2025/module_1_containerization_and_infrastructure_as_code/2_docker_sql/ny_taxi_postgres_data
